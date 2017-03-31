@@ -8,6 +8,7 @@ __pycache__
 # Precompiled Headers
 *.gch
 *.pch
+*.pyc
 
 # Compiled Dynamic libraries
 *.dylib

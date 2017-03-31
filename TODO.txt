@@ -1,0 +1,6 @@
+> criar classe robot
+> implementar classe robot (encapsulando funções)
+> algoritmo robô movimentando
+> salvar GT e plotar como um gráfico
+
+>> (??) passar pela porta

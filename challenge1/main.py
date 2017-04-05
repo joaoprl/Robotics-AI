@@ -10,7 +10,8 @@ def main():
 
     while(True):
         p3dx.move(2, 2)
-
+        p3dx.update()
+        p3dx.print_pose()
     sim.disconnect()
 
 if __name__ == "__main__":

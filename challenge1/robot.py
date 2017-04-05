@@ -81,13 +81,13 @@ class robot:
     ## stop all motors
     def stop(self):
         for motor in self.motor_handle:
-            self.sim.set_joint_target_v(motor, 0)
+            self.sim.set_joint_target_velocity(motor, 0)
 
     ## drive our robot
     def drive(self, v_linear, v_angular):
-        self.sim.set_joint_target_v(self.motor_handle[0], \
+        self.sim.set_joint_target_velocity(self.motor_handle[0], \
                                         self.v_L(v_linear, v_angular))
-        self.sim.set_joint_target_v(self.motor_handle[1], \
+        self.sim.set_joint_target_velocity(self.motor_handle[1], \
                                         self.v_R(v_linear, v_angular))
 
     ## get left motor velocity
@@ -100,5 +100,5 @@ class robot:
 
     ### debug
     def print_pose(self):
-        print ('[' + self.position[0] + ', ' + self.position[1] + ', ' + \
-                self.orientation[2] + ']')
+        print ('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' + \
+                str(self.orientation[2]) + ']')

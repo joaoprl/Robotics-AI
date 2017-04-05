@@ -8,6 +8,9 @@ def main():
     p3dx = robot(sim, "Pioneer_p3dx")
     p3dx.update()
 
+    while(True):
+        p3dx.move(2, 2)
+
     sim.disconnect()
 
 if __name__ == "__main__":

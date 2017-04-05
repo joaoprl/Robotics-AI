@@ -21,7 +21,7 @@ class robot:
         self.name = name                        # robot's name
         self.handle = self.sim.get_handle(name) # robot's id handle
 
-        self.L = WHEEL_DISTANCE 
+        self.L = WHEEL_DISTANCE
         self.R = WHEEL_RADIUS
 
         # get id handles of encoders
@@ -75,8 +75,8 @@ class robot:
         self.orientation = self.sim.get_orientation(self.handle)
 
     def move(self, v_left, v_right):
-        self.sim.set_joint_target_v(self.motor_handle[0], v_left)
-        self.sim.set_joint_target_v(self.motor_handle[1], v_right)
+        self.sim.set_joint_target_velocity(self.motor_handle[0], v_left)
+        self.sim.set_joint_target_velocity(self.motor_handle[1], v_right)
 
     ## stop all motors
     def stop(self):
@@ -100,5 +100,5 @@ class robot:
 
     ### debug
     def print_pose(self):
-        print '[' + self.position[0] + ', ' + self.position[1] + ', ' + \
-                self.orientation[2] + ']'
+        print ('[' + self.position[0] + ', ' + self.position[1] + ', ' + \
+                self.orientation[2] + ']')

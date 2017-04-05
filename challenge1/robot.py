@@ -60,6 +60,7 @@ class robot:
 
     ## general update for our robot
     def update(self):
+        self.sim.update()
         self.update_sensors()
         self.update_pose()
 

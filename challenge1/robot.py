@@ -38,6 +38,14 @@ class robot:
                                 for i in range(NUM_SONARS)]
         self.sonar_readings = [0] * NUM_SONARS
 
+        # init each sonar sensor
+        for i in range(NUM_SONARS):
+            state, coord = self.sim.init_prox_sensor(self.sonar_handle[i])
+            if state > 0:
+                self.sonar_readings[i] = coord[2]
+            else:
+                self.sonar_readings[i] = ERROR
+
         # get current position and orientation
         self.position = self.sim.get_position(self.handle)
         self.orientation = self.sim.get_orientation(self.handle)

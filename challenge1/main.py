@@ -7,11 +7,13 @@ def main():
 
     p3dx = robot(sim, "Pioneer_p3dx")
     p3dx.update()
+    # p3dx.move(-2, -2)
+    p3dx.move(2, 2)
 
     while(True):
-        p3dx.move(2, 2)
         p3dx.update()
-        p3dx.print_pose()
+        print(p3dx.sonar_readings)
+
     sim.disconnect()
 
 if __name__ == "__main__":

@@ -39,6 +39,14 @@ class simulator:
 
         return handle
 
+    def init_prox_sensor(self, handle):
+        status, state, coord, _, _ = vrep.simxReadProximitySensor(self.id, \
+                                        handle, vrep.simx_opmode_streaming)
+        if status is ERROR:
+            raise Exception('Unable to init sensor!')
+
+        return state, coord
+
     def read_prox_sensor(self, handle):
         status, state, coord, _, _ = vrep.simxReadProximitySensor(self.id, \
                                         handle, vrep.simx_opmode_buffer)
@@ -81,4 +89,3 @@ class simulator:
         if self.id is not ERROR:
             vrep.simxSetJointTargetVelocity(self.id, handle, v, \
                                                 vrep.simx_opmode_streaming)
-

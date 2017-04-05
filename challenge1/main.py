@@ -1,4 +1,5 @@
 from robot import robot
+from robotAI import robotAI
 from simulator import *
 
 def main():
@@ -6,13 +7,13 @@ def main():
     sim.connect()
 
     p3dx = robot(sim, "Pioneer_p3dx")
-    p3dx.update()
-    # p3dx.move(-2, -2)
-    p3dx.move(2, 2)
+    p3dxAI = robotAI(p3dx)
 
-    while(True):
+    while True:
         p3dx.update()
-        print(p3dx.sonar_readings)
+        p3dxAI.tick()
+        #p3dx.print_pose()
+        #print(p3dx.sonar_readings)
 
     sim.disconnect()
 

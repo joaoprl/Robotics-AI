@@ -13,6 +13,7 @@ RIGHT_MOTOR = "_rightMotor"
 # name and total of sensors
 SONAR_SENSOR = "_ultrasonicSensor"
 NUM_SONARS = 16
+SONAR_ANGLES = [90, 50, 30, 10, -10, -30, -50, -90, -90, -130, -150, -170, 170, 150, 130, 90]
 
 # robot class definition
 class robot:

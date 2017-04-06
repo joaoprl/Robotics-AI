@@ -14,11 +14,11 @@ def main():
 
     while True:
         p3dx.update()
-        # p3dx.print_pose()
-        # p3dxAI.tick()
+        p3dxAI.tick()
+        #h.update()
         #p3dx.print_pose()
-        h.update()
-        p3dx.print_pose()
+        #p3dx.print_sonars()
+        p3dxAI.print_ai_state()
 
     sim.disconnect()
 

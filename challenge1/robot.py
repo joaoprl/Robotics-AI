@@ -4,6 +4,7 @@ import math
 # name and values definitions
 WHEEL_DISTANCE = 0.381
 WHEEL_RADIUS = 0.0975
+ROBOT_LENGTH = 0.455
 
 LEFT_HANDLE = "_leftWheel"
 RIGHT_HANDLE = "_rightWheel"
@@ -119,11 +120,6 @@ class robot:
     def v_R(self, v_linear, v_angular):
         return (2*v_linear - self.L*v_angular) / (2*self.R)
 
-    ### debug
-    def print_pose(self):
-        print ('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' + \
-                str(self.orientation[2]) + ']')
-
     ## get sonar reading relative to the robot zero
     def getRelSonarReadings(self):
         rel_sonars = []
@@ -131,11 +127,29 @@ class robot:
             if self.sonar_readings[i] != -1:
                 rel_sonars.append([self.sonar_readings[i] * math.cos(SONAR_ANGLES_PLOT[i]) + self.sonars_rel_pos[i][0], \
                                    self.sonar_readings[i] * math.sin(SONAR_ANGLES_PLOT[i]) + self.sonars_rel_pos[i][1],\
-                                   self.sonars_rel_pos[i][2]])
+                                   self.sonars_rel_pos[i][2], i])
         return rel_sonars
 
     def getRelSonarPositions(self):
         return self.sonars_rel_pos
 
-    def getSonarRadius():
+    def getSonarRadius(self):
         return SONAR_RADIUS
+
+    def get_sonar_angles(self):
+        return SONAR_ANGLES
+
+    def get_robot_width(self):
+        return WHEEL_DISTANCE
+
+    def get_robot_length(self):
+        return ROBOT_LENGTH
+
+    ### [debug] robot position and orientation
+    def print_pose(self):
+        print('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' + \
+                str(self.orientation[2]) + ']')
+
+    ### [debug] sonar readings
+    def print_sonars(self):
+        print(self.sonar_readings)

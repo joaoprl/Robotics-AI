@@ -10,15 +10,13 @@ def main():
     p3dx = robot(sim, "Pioneer_p3dx")
     p3dxAI = robotAI(p3dx)
 
-    h = harry_plotter(p3dx)
+    h = harry_plotter(p3dx, p3dxAI)
 
     while True:
         p3dx.update()
-        # p3dx.print_pose()
-        # p3dxAI.tick()
-        #p3dx.print_pose()
+        p3dxAI.tick()
         h.update()
-        # p3dx.print_pose()
+        p3dxAI.print_ai_state()
 
     sim.disconnect()
 

@@ -4,6 +4,7 @@ import math
 # name and values definitions
 WHEEL_DISTANCE = 0.381
 WHEEL_RADIUS = 0.0975
+ROBOT_LENGTH = 0.455
 
 LEFT_HANDLE = "_leftWheel"
 RIGHT_HANDLE = "_rightWheel"
@@ -36,7 +37,8 @@ class robot:
         # get id handles of motors and set their velocity
         self.motor_handle = [self.sim.get_handle(self.name + LEFT_MOTOR), \
                                 self.sim.get_handle(self.name + RIGHT_MOTOR)]
-        self.velocity = [1, 1]
+        self.v_linear = 0
+        self.v_angular = 0
 
         # connect to each of sonar sensor and set its readings
         self.sonar_handle = [self.sim.get_handle(self.name + SONAR_SENSOR + str(i + 1)) \
@@ -91,9 +93,11 @@ class robot:
     ## update pose for our robot
     def update_pose(self):
         self.last_position = [i for i in self.position]
-
         self.position = self.sim.get_position(self.handle)
         self.orientation = self.sim.get_orientation(self.handle)
+        v_linear, v_angular = self.sim.get_velocity(self.handle)
+        self.v_linear = math.sqrt(math.pow(v_linear[0], 2) + math.pow(v_linear[1], 2))
+        self.v_angular = v_angular[2]
 
     def move(self, v_left, v_right):
         self.sim.set_joint_target_velocity(self.motor_handle[0], v_left)
@@ -106,36 +110,49 @@ class robot:
 
     ## drive our robot
     def drive(self, v_linear, v_angular):
-        self.sim.set_joint_target_velocity(self.motor_handle[0], \
-                                        self.v_L(v_linear, v_angular))
-        self.sim.set_joint_target_velocity(self.motor_handle[1], \
-                                        self.v_R(v_linear, v_angular))
+        v_left = self.v_L(v_linear, v_angular)
+        v_right = self.v_R(v_linear, v_angular)
+        self.move(v_left, v_right)
 
     ## get left motor velocity
     def v_L(self, v_linear, v_angular):
-        return (2*v_linear + self.L*v_angular) / (2*self.R)
+        return 2*v_linear - (self.L*v_angular) / (2*self.R)
 
     ## get right motor velocity
     def v_R(self, v_linear, v_angular):
-        return (2*v_linear - self.L*v_angular) / (2*self.R)
-
-    ### debug
-    def print_pose(self):
-        print ('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' + \
-                str(self.orientation[2]) + ']')
+        return 2*v_linear + (self.L*v_angular) / (2*self.R)
 
     ## get sonar reading relative to the robot zero
-    def getRelSonarReadings(self):
+    def get_rel_sonar_readings(self):
         rel_sonars = []
         for i in range(NUM_SONARS):
             if self.sonar_readings[i] != -1:
                 rel_sonars.append([self.sonar_readings[i] * math.cos(SONAR_ANGLES_PLOT[i]) + self.sonars_rel_pos[i][0], \
                                    self.sonar_readings[i] * math.sin(SONAR_ANGLES_PLOT[i]) + self.sonars_rel_pos[i][1],\
-                                   self.sonars_rel_pos[i][2]])
+                                   self.sonars_rel_pos[i][2], i])
         return rel_sonars
 
-    def getRelSonarPositions(self):
+    def get_rel_sonar_positions(self):
         return self.sonars_rel_pos
 
-    def getSonarRadius():
+    def get_sonar_radius(self):
         return SONAR_RADIUS
+
+    def get_sonar_angles(self):
+        return SONAR_ANGLES
+
+    def get_robot_width(self):
+        return WHEEL_DISTANCE
+
+    def get_robot_length(self):
+        return ROBOT_LENGTH
+
+    ### [debug] robot position, orientation and velocity
+    def print_pose(self):
+        print('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' +\
+                str(self.orientation[2]) + ', ' +\
+                str(self.v_linear) + ', ' + str(self.v_angular) + ']')
+
+    ### [debug] sonar readings
+    def print_sonars(self):
+        print(self.sonar_readings)

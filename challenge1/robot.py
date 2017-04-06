@@ -1,4 +1,5 @@
 from simulator import *
+import math
 
 # name and values definitions
 WHEEL_DISTANCE = 0.381
@@ -14,6 +15,9 @@ RIGHT_MOTOR = "_rightMotor"
 SONAR_SENSOR = "_ultrasonicSensor"
 NUM_SONARS = 16
 SONAR_ANGLES = [90, 50, 30, 10, -10, -30, -50, -90, -90, -130, -150, -170, 170, 150, 130, 90]
+SONAR_ANGLES_PLOT = [i * math.pi / 180 + math.pi / 2 for i in SONAR_ANGLES]
+SONAR_RADIUS = 0.0975
+SONAR_HEIGHT = 0.21
 
 # robot class definition
 class robot:
@@ -35,7 +39,7 @@ class robot:
         self.velocity = [1, 1]
 
         # connect to each of sonar sensor and set its readings
-        self.sonar_handle = [self.sim.get_handle(self.name + SONAR_SENSOR + str(i)) \
+        self.sonar_handle = [self.sim.get_handle(self.name + SONAR_SENSOR + str(i + 1)) \
                                 for i in range(NUM_SONARS)]
         self.sonar_readings = [0] * NUM_SONARS
 
@@ -57,6 +61,13 @@ class robot:
         # get encoders for each motorand initialize it
         self.encoders = [self.sim.get_joint_position(i) for i in self.motor_handle]
         self.last_encoder = [i for i in self.encoders]
+
+        # calculate sonar sensors relative position
+        self.sonars_rel_pos = []
+        for i in range(NUM_SONARS):
+            self.sonars_rel_pos.append([math.cos(SONAR_ANGLES_PLOT[i]) * SONAR_RADIUS, \
+                                    math.sin(SONAR_ANGLES_PLOT[i]) * SONAR_RADIUS, \
+                                    SONAR_HEIGHT])
 
     ## general update for our robot
     def update(self):
@@ -111,3 +122,19 @@ class robot:
     def print_pose(self):
         print ('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' + \
                 str(self.orientation[2]) + ']')
+
+    ## get sonar reading relative to the robot zero
+    def getRelSonarReadings(self):
+        rel_sonars = []
+        for i in range(NUM_SONARS):
+            if self.sonar_readings[i] != -1:
+                rel_sonars.append([self.sonar_readings[i] * math.cos(SONAR_ANGLES_PLOT[i]) + self.sonars_rel_pos[i][0], \
+                                   self.sonar_readings[i] * math.sin(SONAR_ANGLES_PLOT[i]) + self.sonars_rel_pos[i][1],\
+                                   self.sonars_rel_pos[i][2]])
+        return rel_sonars
+
+    def getRelSonarPositions(self):
+        return self.sonars_rel_pos
+
+    def getSonarRadius():
+        return SONAR_RADIUS

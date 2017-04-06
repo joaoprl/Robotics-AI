@@ -37,7 +37,8 @@ class robot:
         # get id handles of motors and set their velocity
         self.motor_handle = [self.sim.get_handle(self.name + LEFT_MOTOR), \
                                 self.sim.get_handle(self.name + RIGHT_MOTOR)]
-        self.velocity = [1, 1]
+        self.v_linear = 0
+        self.v_angular = 0
 
         # connect to each of sonar sensor and set its readings
         self.sonar_handle = [self.sim.get_handle(self.name + SONAR_SENSOR + str(i + 1)) \
@@ -92,9 +93,11 @@ class robot:
     ## update pose for our robot
     def update_pose(self):
         self.last_position = [i for i in self.position]
-
         self.position = self.sim.get_position(self.handle)
         self.orientation = self.sim.get_orientation(self.handle)
+        v_linear, v_angular = self.sim.get_velocity(self.handle)
+        self.v_linear = math.sqrt(math.pow(v_linear[0], 2) + math.pow(v_linear[1], 2))
+        self.v_angular = v_angular[2]
 
     def move(self, v_left, v_right):
         self.sim.set_joint_target_velocity(self.motor_handle[0], v_left)
@@ -107,10 +110,9 @@ class robot:
 
     ## drive our robot
     def drive(self, v_linear, v_angular):
-        self.sim.set_joint_target_velocity(self.motor_handle[0], \
-                                        self.v_L(v_linear, v_angular))
-        self.sim.set_joint_target_velocity(self.motor_handle[1], \
-                                        self.v_R(v_linear, v_angular))
+        v_left = self.v_L(v_linear, v_angular)
+        v_right = self.v_R(v_linear, v_angular)
+        self.move(v_left, v_right)
 
     ## get left motor velocity
     def v_L(self, v_linear, v_angular):
@@ -145,10 +147,11 @@ class robot:
     def get_robot_length(self):
         return ROBOT_LENGTH
 
-    ### [debug] robot position and orientation
+    ### [debug] robot position, orientation and velocity
     def print_pose(self):
-        print('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' + \
-                str(self.orientation[2]) + ']')
+        print('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' +\
+                str(self.orientation[2]) + ', ' +\
+                str(self.v_linear) + ', ' + str(self.v_angular) + ']')
 
     ### [debug] sonar readings
     def print_sonars(self):

@@ -81,6 +81,16 @@ class simulator:
 
         return pos
 
+    def get_velocity(self, handle):
+        # return linear and angular velocity
+        status, linear, angular = vrep.simxGetObjectVelocity(self.id, handle, \
+                                        vrep.simx_opmode_streaming)
+
+        if status is ERROR:
+            raise Exception('Unable to receive handle!')
+
+        return linear, angular
+
     def get_joint_position(self, handle):
         status, pos = vrep.simxGetJointPosition(self.id, handle, \
                                         vrep.simx_opmode_streaming)

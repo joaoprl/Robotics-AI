@@ -17,16 +17,18 @@ class harry_plotter:
         plt.clf()
         # initialize graph
         plt.title('Sensors')
-        plt.ylabel('Y')
-        plt.xlabel('X')
+        plt.ylabel('')
+        plt.xlabel('')
         plt.xlim(-1.5,1.5)
         plt.ylim(-1.5,1.5)
         plt.grid(False)
 
+        ## This plot is rotate 90 degrees! 
+
         # plot sensors
         sensors = self.rob.get_rel_sonar_positions()
         for p in sensors:
-            plt.scatter(p[0], p[1], 1, c='y')
+            plt.scatter(-p[1], p[0], 1, c='y')
 
         # plot robot center
         robotColor = 'black'
@@ -37,7 +39,7 @@ class harry_plotter:
         # plot detected positions
         detected = self.rob.get_rel_sonar_readings()
         for p in detected:
-            plt.scatter(p[0], p[1], 1, c='r')
+            plt.scatter(-p[1], p[0], 1, c='r')
 
         # Update shown plot
         plt.pause(0.000000001)

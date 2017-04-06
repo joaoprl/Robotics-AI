@@ -12,6 +12,7 @@ class robotAI:
         self.state = None
         self.goal_first_run = False
         self.state_first_run = False
+        self.changed_state = False
         self.flip_movement = False
         self.obstacle_forward = False
         self.obstacle_backward = False
@@ -38,9 +39,14 @@ class robotAI:
     ## changes to new state and makes sure the first run is differentiated
     def change_state(self, new_state):
         if new_state != self.state:
+            if self.changed_state:
+                print('> State change queued for next tick')
+                self.changed_state = False
+                return
             self.state = new_state
             print('> Switched to state \'' + self.get_state_name() + '\'')
             self.state_first_run = True
+        self.changed_state = True
         new_state()
         self.state_first_run = False
 

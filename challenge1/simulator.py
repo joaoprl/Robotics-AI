@@ -12,6 +12,7 @@ class simulator:
 
     def connect(self):
         self.id = vrep.simxStart(self.ip, self.port, True, True, 2000, 5)
+        vrep.simxSynchronous(self.id, True)
 
         if self.id == ERROR:
             raise Exception('Unable to connect to V-REP Server!')
@@ -29,6 +30,10 @@ class simulator:
     def resume(self):
         if self.id is not ERROR:
             vrep.simxPauseCommunication(self.id, 1)
+
+    def update(self):
+        if self.id is not ERROR:
+            vrep.simxSynchronousTrigger(self.id)
 
     def get_handle(self, name):
         status, handle = vrep.simxGetObjectHandle(self.id, name, \

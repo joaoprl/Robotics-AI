@@ -36,7 +36,11 @@ class robotAI:
     def moveBackward(self):
         self.p3dx.move(-VELOCITY, -VELOCITY)
 
-    ## state: move robot backward
+    ## state: rotate robot left
     def rotateLeft(self):
         self.p3dx.move(-VELOCITY, VELOCITY)
+
+    ## state: rotate robot right
+    def rotateRight(self):
+        self.p3dx.move(VELOCITY, -VELOCITY)
     

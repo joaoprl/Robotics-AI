@@ -14,6 +14,7 @@ class robotAI:
         self.state_first_run = False
         self.tick_first_state = None
         self.flip_movement = False
+        self.last_rotation = None
         self.obstacle_forward = False
         self.obstacle_backward = False
         self.obstacle_left = False
@@ -121,9 +122,11 @@ class robotAI:
 
     ## chooses which direction to rotate
     def get_next_rotation_state(self):
-        if not self.obstacle_right:
+        if self.last_rotation != self.state_rotate_right and not self.obstacle_right:
+            self.last_rotation = self.state_rotate_right
             return self.state_rotate_right
         else:
+            self.last_rotation = self.state_rotate_left
             return self.state_rotate_left
 
     ## flips movement

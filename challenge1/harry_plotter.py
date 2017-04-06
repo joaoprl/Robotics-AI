@@ -61,13 +61,10 @@ class harry_plotter:
         # plot detected positions
         detected = self.rob.get_rel_sonar_readings()
         for p in detected:
-            x = p[0]
-            y = p[1]
-
             # rotate
             th = self.rob.orientation[2]
-            x = math.cos(th) * x - math.sin(th) * y
-            y = math.sin(th) * x + math.cos(th) * y
+            x = math.cos(th) * p[0] - math.sin(th) * p[1]
+            y = math.sin(th) * p[0] + math.cos(th) * p[1]
 
             # translate
             x = x + self.rob.position[0]

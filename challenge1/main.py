@@ -14,8 +14,8 @@ def main():
 
     while True:
         p3dx.update()
-        p3dxAI.tick()
         h.update()
+        p3dxAI.tick()
         p3dxAI.print_ai_state()
 
     sim.disconnect()

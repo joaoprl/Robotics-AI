@@ -12,7 +12,7 @@ class robotAI:
         self.state = None
         self.goal_first_run = False
         self.state_first_run = False
-        self.changed_state = False
+        self.tick_first_state = None
         self.flip_movement = False
         self.obstacle_forward = False
         self.obstacle_backward = False
@@ -26,40 +26,47 @@ class robotAI:
         self.update_obstacles()
         self.check_stuck()
         self.goal()
+        self.tick_first_state = None
 
     ## changes to new goal and makes sure the first run is differentiated
-    def change_goal(self, new_goal, new_state = None):
+    def change_goal(self, new_goal, new_state=None, force=False):
         if new_goal != self.goal:
             self.goal = new_goal
             print('> Switched to goal \'' + self.get_goal_name() + '\'')
-            self.goal_first_run = True
+            self.goal_first_run = True or force
         new_goal(new_state)
         self.goal_first_run = False
 
     ## changes to new state and makes sure the first run is differentiated
-    def change_state(self, new_state):
+    def change_state(self, new_state, force=False):
         if new_state != self.state:
-            if self.changed_state:
-                print('> State change queued for next tick')
-                self.changed_state = False
-                return
             self.state = new_state
             print('> Switched to state \'' + self.get_state_name() + '\'')
-            self.state_first_run = True
-        self.changed_state = True
+            self.state_first_run = True or force
+        if self.tick_first_state == None:
+            self.tick_first_state = self.state
+        elif self.tick_first_state == self.state:
+            print('> Possible recursiveness with state \'' + self.get_state_name() + '\'')
+            return
         new_state()
         self.state_first_run = False
 
     ## returns name of the function of current goal
-    def get_goal_name(self):
-        return str(self.goal.__name__).replace('goal_', '')
+    def get_goal_name(self, goal=None):
+        if goal != None:
+            return str(goal.__name__).replace('goal_', '')
+        else:
+            return str(self.goal.__name__).replace('goal_', '')
 
     ## returns name of the function of current state
-    def get_state_name(self):
-        return str(self.state.__name__).replace('state_', '')
+    def get_state_name(self, state=None):
+        if state != None:
+            return str(state.__name__).replace('state_', '')
+        else:
+            return str(self.state.__name__).replace('state_', '')
 
     ## checks with robot has stopped (or almost stopped)
-    def check_stopped(self, is_exact = False):
+    def check_stopped(self, is_exact=False):
         if is_exact:
             return self.p3dx.last_position == self.p3dx.position
         else:
@@ -72,7 +79,7 @@ class robotAI:
             if self.state == self.state_move_forward or self.state == self.state_move_backward:
                 print('> Robot possibly stuck at [' + str(self.p3dx.position[0]) + ', ' +\
                       str(self.p3dx.last_position[0]) + ', ' + str(self.p3dx.orientation[2]) + ']')
-                self.change_goal(self.goal_break_free)
+                self.change_goal(self.goal_break_free, None, True)
                 return True
             else:
                 self.change_state(self.state_move_forward)
@@ -124,7 +131,7 @@ class robotAI:
         self.flip_movement = flip_movement
 
     ## goal: explore until find another wall
-    def goal_explore(self, new_state = None):
+    def goal_explore(self, new_state=None):
         # start exploration by moving forward
         if self.goal_first_run:
             if new_state != None:

@@ -15,7 +15,7 @@ RIGHT_MOTOR = "_rightMotor"
 SONAR_SENSOR = "_ultrasonicSensor"
 NUM_SONARS = 16
 SONAR_ANGLES = [90, 50, 30, 10, -10, -30, -50, -90, -90, -130, -150, -170, 170, 150, 130, 90]
-SONAR_ANGLES_PLOT = [i * math.pi / 180 + math.pi / 2 for i in SONAR_ANGLES]
+SONAR_ANGLES_PLOT = [i * math.pi / 180 for i in SONAR_ANGLES]
 SONAR_RADIUS = 0.0975
 SONAR_HEIGHT = 0.21
 

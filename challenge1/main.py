@@ -18,7 +18,7 @@ def main():
         # p3dxAI.tick()
         #p3dx.print_pose()
         h.update()
-        p3dx.print_pose()
+        # p3dx.print_pose()
 
     sim.disconnect()
 

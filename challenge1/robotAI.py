@@ -1,19 +1,22 @@
 import math
 
-VELOCITY = 3
+V_LINEAR = 1
+V_ANGULAR = 0.75
 MARGIN_FOR_ERROR = 0.0001
 MARGIN_FOR_OBSTACLES = 0.4
 
 class robotAI:
     def __init__(self, p3dx):
         self.p3dx = p3dx
+        self.goal = self.stop
         self.state = self.stop
-        self.state_first_run = False
+        self.state_first_run = True
         self.obstacle_forward = False
         self.obstacle_backward = False
         self.obstacle_left = False
         self.obstacle_right = False
-        print('> Started AI with state \'' + self.get_state_name() + '\'')
+        print('> AI started')
+        self.change_state(self.stop)
 
     ## updates AI states
     def tick(self):
@@ -61,15 +64,17 @@ class robotAI:
         robot_half_length = self.p3dx.get_robot_length() / 2
         robot_half_width = self.p3dx.get_robot_width() / 2
         sonar_angles = self.p3dx.get_sonar_angles()
-        obstacle_positions = self.p3dx.getRelSonarReadings()
+        obstacle_positions = self.p3dx.get_rel_sonar_readings()
+
         for position in obstacle_positions:
             magnitude = math.sqrt(math.pow(position[0], 2) + math.pow(position[1], 2))
             if magnitude > MARGIN_FOR_OBSTACLES:
                 continue
 
             angle = sonar_angles[position[3]]
-            vector_component_y = math.fabs(magnitude * math.cos(angle))
-            vector_component_x = math.fabs(magnitude * math.sin(angle))
+            angle_radians = math.radians(angle)
+            vector_component_y = math.fabs(magnitude * math.cos(angle_radians))
+            vector_component_x = math.fabs(magnitude * math.sin(angle_radians))
 
             if vector_component_y < robot_half_length:
                 if angle > 0:
@@ -93,7 +98,7 @@ class robotAI:
     ## state: move robot forward
     def move_forward(self):
         if self.state_first_run:
-            self.p3dx.move(VELOCITY, VELOCITY)
+            self.p3dx.drive(V_LINEAR, 0)
         if self.obstacle_forward:
             if not self.obstacle_right:
                 self.change_state(self.rotate_right)
@@ -103,7 +108,7 @@ class robotAI:
     ## state: move robot backward
     def move_backward(self):
         if self.state_first_run:
-            self.p3dx.move(-VELOCITY, -VELOCITY)
+            self.p3dx.drive(-V_LINEAR, 0)
         if self.obstacle_backward:
             if not self.obstacle_right:
                 self.change_state(self.rotate_left)
@@ -113,14 +118,14 @@ class robotAI:
     ## state: rotate robot left
     def rotate_left(self):
         if self.state_first_run:
-            self.p3dx.move(-VELOCITY, VELOCITY)
+            self.p3dx.drive(0, V_ANGULAR)
         if not self.obstacle_forward:
             self.change_state(self.move_forward)
 
     ## state: rotate robot right
     def rotate_right(self):
         if self.state_first_run:
-            self.p3dx.move(VELOCITY, -VELOCITY)
+            self.p3dx.drive(0, -V_ANGULAR)
         if not self.obstacle_forward:
             self.change_state(self.move_forward)
 

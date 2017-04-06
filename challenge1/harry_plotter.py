@@ -18,7 +18,7 @@ class harry_plotter:
         plt.grid(False)
 
         # plot sensors
-        sensors = self.rob.getRelSonarPositions()
+        sensors = self.rob.get_rel_sonar_positions()
         for p in sensors:
             plt.scatter(p[0], p[1], 1, c='y')
 
@@ -26,7 +26,7 @@ class harry_plotter:
         plt.scatter(0,0,1,c='black')
 
         # plot sensors values
-        detected = self.rob.getRelSonarReadings()
+        detected = self.rob.get_rel_sonar_readings()
         for p in detected:
             plt.scatter(p[0], p[1], 1, c='r')
-        plt.pause(0.01)
+        plt.pause(0.001)

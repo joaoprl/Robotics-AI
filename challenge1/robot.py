@@ -114,14 +114,14 @@ class robot:
 
     ## get left motor velocity
     def v_L(self, v_linear, v_angular):
-        return (2*v_linear + self.L*v_angular) / (2*self.R)
+        return 2*v_linear - (self.L*v_angular) / (2*self.R)
 
     ## get right motor velocity
     def v_R(self, v_linear, v_angular):
-        return (2*v_linear - self.L*v_angular) / (2*self.R)
+        return 2*v_linear + (self.L*v_angular) / (2*self.R)
 
     ## get sonar reading relative to the robot zero
-    def getRelSonarReadings(self):
+    def get_rel_sonar_readings(self):
         rel_sonars = []
         for i in range(NUM_SONARS):
             if self.sonar_readings[i] != -1:
@@ -130,10 +130,10 @@ class robot:
                                    self.sonars_rel_pos[i][2], i])
         return rel_sonars
 
-    def getRelSonarPositions(self):
+    def get_rel_sonar_positions(self):
         return self.sonars_rel_pos
 
-    def getSonarRadius(self):
+    def get_sonar_radius(self):
         return SONAR_RADIUS
 
     def get_sonar_angles(self):

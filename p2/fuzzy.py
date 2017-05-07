@@ -17,7 +17,7 @@ class fuzzy:
         return
 
     ## build our fuzzy rules
-    def prepare_rules(self):
+    def prepare_space(self):
         ### 
         ### inputs
         ###
@@ -75,7 +75,7 @@ class fuzzy:
         self.accelaration['positive'] = fuzz.trapmf(acc_space, [0, .1, .4, .4])
 
     ## display our current rules
-    def display_rules(self):
+    def display_space(self):
         self.perception_angle.view()
         plt.show()
 
@@ -94,7 +94,11 @@ class fuzzy:
         self.accelaration.view()
         plt.show()
 
+    def prepare_rules(self):
+        orientation_rule = ctrl.Rule(self.perception_angle['right_back'], \
+            turn['little_left'])
+
 if __name__ == "__main__":
     ai = fuzzy("robot")
-    ai.prepare_rules()
-    ai.display_rules()
+    ai.prepare_space()
+    ai.display_space()

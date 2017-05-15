@@ -1,12 +1,13 @@
 #
-#   P2!   
+#   P2!
 #  Implements odometry and fuzzy behavior for p3dx.
 #
 
-from simulator import simulator 
+from time import time
+from simulator import simulator
 from robot import robot
 from fuzzy import fuzzy
-
+from robotAI import robotAI
 from harry_plotter import harry_plotter
 
 def main():
@@ -15,13 +16,17 @@ def main():
 
     p3dx = robot(sim, "Pioneer_p3dx")
     ai = fuzzy(p3dx)
+    #ai = robotAI(p3dx)
+    hp = harry_plotter(p3dx, ai)
 
-    # hp = harry_plotter(p3dx, ai)
+    tick_time = 0
 
     while True:
-        p3dx.update()
-        # hp.update()
+        start_time = time()
+        p3dx.update(tick_time)
+        hp.update()
         ai.tick()
+        tick_time = time() - start_time
 
     sim.disconnect()
 

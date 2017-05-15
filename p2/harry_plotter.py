@@ -29,19 +29,19 @@ class harry_plotter:
 
         # plot sensors
         sensors = self.p3dx.get_rel_sonar_positions()
-        for p in sensors:
-            plt.scatter(-p[1], p[0], 1, c='y')
+        for point in sensors:
+            plt.scatter(-point[1], point[0], 1, c='y')
 
         # plot robot center
-        robotColor = 'black'
+        #robot_color = 'black'
         #if self.ai.check_stuck:
-        #    robotColor = 'yellow'
-        plt.scatter(0, 0, 1, c=robotColor)
+        #    robot_color = 'red'
+        plt.scatter(0, 0, 1, c='black')
 
         # plot detected positions
         detected = self.p3dx.get_rel_sonar_readings()
-        for p in detected:
-            plt.scatter(-p[1], p[0], 1, c='r')
+        for point in detected:
+            plt.scatter(-point[1], point[0], 1, c='r')
 
         # Update shown plot
         plt.pause(0.000000001)
@@ -56,29 +56,32 @@ class harry_plotter:
         plt.grid(False)
 
         # plot robot
-        robotColor = 'red'
+        #robot_color = 'blue'
         #if self.ai.check_stuck:
-        #    robotColor = 'yellow'
-        plt.scatter(int(100 * self.p3dx.position[0]), int(100 * self.p3dx.position[1]), 1, c=robotColor)
+        #    robot_color = 'red'
+        true_pose = self.p3dx.true_pose
+        world_pose = self.p3dx.get_world_pose()
+        plt.scatter(int(100 * true_pose[0]), int(100 * true_pose[1]), 1, c='blue')
+        plt.scatter(int(100 * world_pose[0]), int(100 * world_pose[1]), 1, c='green')
 
         # plot detected positions
         detected = self.p3dx.get_rel_sonar_readings()
-        for p in detected:
+        for point in detected:
             # rotate
-            th = self.p3dx.orientation[2]
-            x = math.cos(th) * p[0] - math.sin(th) * p[1]
-            y = math.sin(th) * p[0] + math.cos(th) * p[1]
+            angle = self.p3dx.pose[2]
+            xpos = math.cos(angle) * point[0] - math.sin(angle) * point[1]
+            ypos = math.sin(angle) * point[0] + math.cos(angle) * point[1]
 
             # translate
-            x = x + self.p3dx.position[0]
-            y = y + self.p3dx.position[1]
+            xpos = xpos + world_pose[0]
+            ypos = ypos + world_pose[1]
 
             # zoom in and round to integer
-            x = int(100 * x)
-            y = int(100 * y)
+            xpos = int(100 * xpos)
+            ypos = int(100 * ypos)
 
             # plot
-            plt.scatter(x, y, 1, c='black')
+            plt.scatter(xpos, ypos, 1, c='black')
 
         # Update shown plot
         plt.pause(0.000000001)

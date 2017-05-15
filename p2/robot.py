@@ -162,8 +162,8 @@ class robot:
         self.true_v_angular = v_angular[2]
 
     def move(self, v_left, v_right):
-        self.sim.set_joint_target_velocity(self.motor_handle[0], v_left)
-        self.sim.set_joint_target_velocity(self.motor_handle[1], v_right)
+        self.sim.set_joint_target_velocity(self.motor_handle[0], v_right)
+        self.sim.set_joint_target_velocity(self.motor_handle[1], v_left)
 
     ## stop all motors
     def stop(self):

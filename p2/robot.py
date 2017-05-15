@@ -135,9 +135,9 @@ class robot:
 
             # calculate robot velocity
             self.v_linear = (wheel_v_linear[0] + wheel_v_linear[1]) / 2
-            self.v_angular = (wheel_v_linear[0] - wheel_v_linear[1]) / (2 * self.L)
+            self.v_angular = (wheel_v_linear[0] - wheel_v_linear[1]) / self.L
 
-            #composed_v_angular = wheel_v_linear / (2 * self.L)
+            #composed_v_angular = wheel_v_linear / self.L
             #turn_radius = self.v_linear / self.v_angular
 
             # calculate difference in pose

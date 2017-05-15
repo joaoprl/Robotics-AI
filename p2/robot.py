@@ -66,9 +66,9 @@ class robot:
                                     SONAR_HEIGHT])
 
         # declare pose and velocity variables
-        self.true_pose = np.array([0, 0, 0])
-        self.pose = np.array([0, 0, 0])
-        self.last_pose = np.array([0, 0, 0])
+        self.true_pose = np.zeros(3)
+        self.pose = np.zeros(3)
+        self.last_pose = np.zeros(3)
         self.true_v_linear = self.true_v_angular = 0
         self.v_linear = self.v_angular = 0
 
@@ -119,16 +119,15 @@ class robot:
         # update pose with odometry
         else:
             # determine delta angular position of wheels
-            wheel_delta_theta = np.array([0, 0])
+            wheel_delta_theta = np.zeros(2)
             for i in range(2):
                 delta = self.wheel_angle[i] - self.last_wheel_angle[i]
-                print delta
                 if abs(delta) < math.pi:
                     wheel_delta_theta[i] = delta
                 elif delta < 0:
-                    wheel_delta_theta[i] = delta + math.pi
+                    wheel_delta_theta[i] = delta + 2 * math.pi
                 else:
-                    wheel_delta_theta[i] = delta - math.pi
+                    wheel_delta_theta[i] = delta - 2 * math.pi
 
             # calculate wheel velocity
             wheel_v_angular = wheel_delta_theta / tick_time

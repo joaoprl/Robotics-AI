@@ -5,10 +5,14 @@ import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 from matplotlib import pyplot as plt
 
+import math
+
 V_LINEAR = 1
-V_ANGULAR = .75
+V_ANGULAR = .2
 MARGIN_FOR_ERROR = .0001
-MARGIN_FOR_OBSTACLES = .4
+
+D_MIN = .4
+D_MAX = 1.03
 
 class fuzzy:
     def __init__(self, robot):
@@ -16,18 +20,68 @@ class fuzzy:
         self.bake_space()
         self.bake_rules()
 
-        self.vmax = .45
+        self.vmax = .7
         self.vmin = .05
+        self.vcur = .45
+
+        self.last_magnitude = 0
 
     ## updates AI states
     def tick(self):
-        # self.orientation_rule.input['perception_angle'] = 0.2
-        # self.orientation_rule.input['perception'] = 0.2
-        # self.orientation_rule.compute()
+        angle, magnitude = self.get_perception_values()
 
-        # orientation = self.orientation_rule.output['turn']
+        # get ANGULAR speed for robot 
+        self.directional.input['perception_angle'] = angle
+        self.directional.input['general_perception'] = magnitude
+        self.directional.compute()
 
-        return
+        v_angular = math.radians(self.directional.output['steer'])
+
+        # get LINEAR speed for robot
+        perception_change = self.clamp(magnitude-self.last_magnitude)
+
+        self.speed.input['perception_change'] = perception_change
+        self.speed.input['general_perception'] = magnitude
+        self.speed.compute()
+
+        acc = math.radians(self.speed.output['acceleration'])
+        self.vcur += acc
+
+        # update our values
+        self.robot.drive(min(self.vmax, self.vcur), v_angular*V_ANGULAR)
+        self.last_magnitude = magnitude
+
+    ## get current perception angle and magnitude for robot
+    def get_perception_values(self):
+        sonar_angles = self.robot.get_sonar_angles()
+        robot_perceptions = self.robot.get_rel_sonar_readings()
+
+        x = 0
+        y = 0
+
+        # collect data from all directions
+        for position in robot_perceptions:
+            magnitude = math.sqrt(position[0]**2 + position[1]**2)
+
+            # clamp useless data
+            magnitude = 0 if magnitude < D_MIN else 1 if \
+                             magnitude > D_MAX else magnitude
+
+            angle = sonar_angles[position[3]]
+            angle_rad = math.radians(angle)
+
+            y += magnitude * math.cos(angle_rad)
+            x += magnitude * math.sin(angle_rad)
+
+        # retrieve resulting angle and magnitude
+        angle = np.degrees(math.atan2(x, y))
+        magnitude = min(math.sqrt(x**2 + y**2), 1)
+
+        return angle, magnitude
+
+    ## clamp value between 0 and 1
+    def clamp(self, v):
+        return max(min(v, 1), 0)
 
     ###
     ### fuzzy space
@@ -41,15 +95,15 @@ class fuzzy:
         general_space = np.arange(0, 1, .1)
 
         ## rules for perception angle
-        self.perception_angle = ctrl.Antecedent(angles_space, 'perception angle $\\alpha$')
+        self.perception_angle = ctrl.Antecedent(angles_space, 'perception_angle')
         self.set_perception_angle(self.perception_angle)
 
         ## rules for general perception
-        self.perception = ctrl.Antecedent(general_space, 'general perception $p$')
+        self.perception = ctrl.Antecedent(general_space, 'general_perception')
         self.set_perception(self.perception)
 
         ## rules for general change
-        self.perception_change = ctrl.Antecedent(general_space, 'perception change $p*$')
+        self.perception_change = ctrl.Antecedent(general_space, 'perception_change')
         self.set_perception_change(self.perception_change)
 
         ## 
@@ -60,15 +114,15 @@ class fuzzy:
         acc_space = np.arange(-.4, .4, .1)
 
         ## rules for turning
-        self.turn = ctrl.Antecedent(orientation_space, 'turn $\\phi[\\deg/s]$')
+        self.turn = ctrl.Consequent(orientation_space, 'turn')
         self.set_turn(self.turn)
 
         ## rules for steer
-        self.steer = ctrl.Antecedent(steer_space, 'steer $\\Psi[\\deg/s]$')
+        self.steer = ctrl.Consequent(steer_space, 'steer')
         self.set_steer(self.steer)
 
         ## rules for acceleration
-        self.acceleration = ctrl.Antecedent(acc_space, 'acceleration $v[m/s^2]$')
+        self.acceleration = ctrl.Consequent(acc_space, 'acceleration')
         self.set_acceleration(self.acceleration)
 
     ## 
@@ -297,4 +351,3 @@ class fuzzy:
 
 if __name__ == "__main__":
     ai = fuzzy("robot")
-    ai.display_space()

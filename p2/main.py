@@ -16,11 +16,11 @@ def main():
     p3dx = robot(sim, "Pioneer_p3dx")
     ai = fuzzy(p3dx)
 
-    hp = harry_plotter(p3dx, ai)
+    # hp = harry_plotter(p3dx, ai)
 
     while True:
         p3dx.update()
-        hp.update()
+        # hp.update()
         ai.tick()
 
     sim.disconnect()

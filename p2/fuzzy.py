@@ -15,16 +15,11 @@ D_MIN = .6
 D_MAX = 1.1
 STUCK = 5
 
-explorer = 0
-
-
 class fuzzy:
     def __init__(self, robot):
         self.robot = robot
         self.bake_space()
         self.bake_rules()
-
-        self.mode = explorer
 
         self.vmax = .7
         self.vmin = .3

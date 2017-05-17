@@ -55,10 +55,10 @@ class harry_plotter:
         plt.grid(False)
 
         # plot robot
-        robotColor = 'red'
-        if self.robAI.check_stuck:
-            robotColor = 'yellow'
+        robotColor = 'yellow'
+        trueColor = 'blue'
         plt.scatter(int(100 * self.rob.position[0]), int(100 * self.rob.position[1]), 1, c=robotColor)
+        plt.scatter(int(100 * self.rob.true_position[0]), int(100 * self.rob.true_position[1]), 1, c=trueColor)
 
         # plot detected positions
         detected = self.rob.get_rel_sonar_readings()

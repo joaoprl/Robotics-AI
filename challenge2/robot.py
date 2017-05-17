@@ -37,8 +37,6 @@ class robot:
         # get id handles of motors and set their velocity
         self.motor_handle = [self.sim.get_handle(self.name + LEFT_MOTOR), \
                                 self.sim.get_handle(self.name + RIGHT_MOTOR)]
-        self.v_linear = 0
-        self.v_angular = 0
 
         # connect to each of sonar sensor and set its readings
         self.sonar_handle = [self.sim.get_handle(self.name + SONAR_SENSOR + str(i + 1)) \
@@ -113,10 +111,11 @@ class robot:
             wheel_delta = wheel_delta + [0]
             if abs(delta) < math.pi:
                 wheel_delta[-1] = delta
-            elif delta < 0:
+            elif delta <= -math.pi:
                 wheel_delta[-1] = delta + 2 * math.pi
-            else:
+            else: # delta > math.pi
                 wheel_delta[-1] = delta - 2 * math.pi
+
             wheel_delta[-1] = wheel_delta[-1] * WHEEL_RADIUS
         delta_orientation = (wheel_delta[1] - wheel_delta[0]) / WHEEL_DISTANCE
         # self.orientation = self.true_orientation
@@ -131,10 +130,6 @@ class robot:
             self.orientation[2] -= 2 * math.pi
         if(self.orientation[2] <= -math.pi):
             self.orientation[2] += 2 * math.pi
-
-        v_linear, v_angular = self.sim.get_velocity(self.handle)
-        self.v_linear = math.sqrt(math.pow(v_linear[0], 2) + math.pow(v_linear[1], 2))
-        self.v_angular = v_angular[2]
 
     def move(self, v_left, v_right):
         self.sim.set_joint_target_velocity(self.motor_handle[0], v_left)
@@ -187,8 +182,7 @@ class robot:
     ### [debug] robot position, orientation and velocity
     def print_pose(self):
         print('[' + str(self.position[0]) + ', ' + str(self.position[1]) + ', ' +\
-                str(self.orientation[2]) + ', ' +\
-                str(self.v_linear) + ', ' + str(self.v_angular) + ']')
+                str(self.orientation[2]) + ']')
 
     ### [debug] sonar readings
     def print_sonars(self):

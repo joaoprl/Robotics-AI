@@ -7,13 +7,16 @@ from matplotlib import pyplot as plt
 
 import math
 
-V_LINEAR = 3
-V_ANGULAR = .4
+V_LINEAR = 2
+V_ANGULAR = .45
 
-MARGIN_FOR_ERROR = .001
-D_MIN = .4
-D_MAX = 1.03
+MARGIN_FOR_ERROR = .01
+D_MIN = .6
+D_MAX = 1.1
 STUCK = 5
+
+explorer = 0
+
 
 class fuzzy:
     def __init__(self, robot):
@@ -21,8 +24,10 @@ class fuzzy:
         self.bake_space()
         self.bake_rules()
 
+        self.mode = explorer
+
         self.vmax = .7
-        self.vmin = .05
+        self.vmin = .3
         self.vcur = .45
 
         self.stuck_counter = 0
@@ -35,11 +40,16 @@ class fuzzy:
     def tick(self):
         angle, magnitude = self.get_perception_values()
 
+        print '[UPDATE]\tClosest object range: ' + str(magnitude)
+
+        self.orientation.input['perception_angle'] = angle
+        self.orientation.input['general_perception'] = magnitude
+        self.orientation.compute()
+
         # get ANGULAR speed for robot 
         self.directional.input['perception_angle'] = angle
         self.directional.input['general_perception'] = magnitude
         self.directional.compute()
-
         v_angular = math.radians(self.directional.output['steer'])
 
         # get LINEAR speed for robot
@@ -48,18 +58,20 @@ class fuzzy:
         self.speed.input['perception_change'] = perception_change
         self.speed.input['general_perception'] = magnitude
         self.speed.compute()
-
         acc = math.radians(self.speed.output['acceleration'])
+
+        # update speed
         self.vcur += acc
 
-        # are we stuck!?
+        # are we stuck!? begin UNSTUCK state! until we reset it
         if self.stuck(magnitude, angle) or self.stuck_reset == 0:
             self.vcur = -(self.vcur + self.vmax/2)
 
-            print '[HEY] \tI\'m trying to fix my path!'
+            print '[HEY]\t\tI\'m trying to fix my path!'
 
         # update our values
-        self.robot.drive(min(self.vmax, self.vcur)*V_LINEAR, v_angular*V_ANGULAR)
+        self.robot.drive(self.clamp_velocity(self.vcur)*V_LINEAR, \
+                            v_angular*V_ANGULAR)
 
         # update states
         self.last_magnitude = magnitude
@@ -75,7 +87,7 @@ class fuzzy:
 
             # can we avoid an obstacle?
             if self.stuck_counter > STUCK and self.stuck_reset < 0:
-                print "[HELP] \tI am stuck, help me!"
+                print "[HELP]\t\tI am stuck, help me!"
 
                 # reset counters
                 self.stuck_counter = 0
@@ -83,11 +95,12 @@ class fuzzy:
 
                 return True
         else:
-            # update counters
+            # get to reset our current stuck state
             self.stuck_reset -= 1
-            self.stuck_counter -= 1
 
-        self.robot.print_pose()
+            # were we stuck? change that!
+            if self.stuck_counter > 0:
+                self.stuck_counter -= 1
 
         self.stuck_reset -= 1
         return False
@@ -101,31 +114,42 @@ class fuzzy:
         sonar_angles = self.robot.get_sonar_angles()
         robot_perceptions = self.robot.get_rel_sonar_readings()
 
-        x = 0
-        y = 0
+        min_magnitude = D_MAX
+        min_angle = 0
+
+        # x = 0
+        # y = 0
 
         # collect data from all directions
         for position in robot_perceptions:
             magnitude = math.sqrt(position[0]**2 + position[1]**2)
-
-            # clamp useless data
-            magnitude = 1 if magnitude > D_MAX else magnitude
-
             angle = sonar_angles[position[3]]
-            angle_rad = math.radians(angle)
 
-            y += magnitude * math.cos(angle_rad)
-            x += magnitude * math.sin(angle_rad)
+            # find our minimum magnitude, ie. closest object
+            if magnitude < min_magnitude:
+                min_magnitude = magnitude
+                min_angle = angle
 
+            # angle_rad = math.radians(angle)
+            # y += magnitude * math.cos(angle_rad)
+            # x += magnitude * math.sin(angle_rad)
+
+        # currently [UNUSED]
         # retrieve resulting angle and magnitude
-        angle = np.degrees(math.atan2(x, y))
-        magnitude = min(math.sqrt(x**2 + y**2), 1)
+        # angle = np.degrees(math.atan2(x, y))
+        # magnitude = self.clamp(math.sqrt(x**2 + y**2)/D_MAX)
 
-        return angle, magnitude
+        return min_angle, self.clamp(D_MAX-min_magnitude)
 
     ## clamp value between 0 and 1
     def clamp(self, v):
         return max(min(v, 1), 0)
+
+    ## clamp velocity
+    def clamp_velocity(self, v):
+        sign = -1 if v < 0 else 1
+
+        return sign*max(min(abs(v), self.vmax), self.vmin)
 
     ###
     ### fuzzy space

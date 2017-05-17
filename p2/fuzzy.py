@@ -7,12 +7,13 @@ from matplotlib import pyplot as plt
 
 import math
 
-V_LINEAR = 1
-V_ANGULAR = .2
-MARGIN_FOR_ERROR = .0001
+V_LINEAR = 3
+V_ANGULAR = .4
 
+MARGIN_FOR_ERROR = .001
 D_MIN = .4
 D_MAX = 1.03
+STUCK = 5
 
 class fuzzy:
     def __init__(self, robot):
@@ -24,7 +25,11 @@ class fuzzy:
         self.vmin = .05
         self.vcur = .45
 
+        self.stuck_counter = 0
+        self.stuck_reset = -1
+
         self.last_magnitude = 0
+        self.last_angle = 0
 
     ## updates AI states
     def tick(self):
@@ -38,7 +43,7 @@ class fuzzy:
         v_angular = math.radians(self.directional.output['steer'])
 
         # get LINEAR speed for robot
-        perception_change = self.clamp(magnitude-self.last_magnitude)
+        perception_change = self.clamp(abs(magnitude-self.last_magnitude))
 
         self.speed.input['perception_change'] = perception_change
         self.speed.input['general_perception'] = magnitude
@@ -47,9 +52,49 @@ class fuzzy:
         acc = math.radians(self.speed.output['acceleration'])
         self.vcur += acc
 
+        # are we stuck!?
+        if self.stuck(magnitude, angle) or self.stuck_reset == 0:
+            self.vcur = -(self.vcur + self.vmax/2)
+
+            print '[HEY] \tI\'m trying to fix my path!'
+
         # update our values
-        self.robot.drive(min(self.vmax, self.vcur), v_angular*V_ANGULAR)
+        self.robot.drive(min(self.vmax, self.vcur)*V_LINEAR, v_angular*V_ANGULAR)
+
+        # update states
         self.last_magnitude = magnitude
+        self.last_angle = angle
+
+    ## return true, if we are stuck
+    def stuck(self, magnitude, angle):
+        # check for x and y position
+        if self.same(self.robot.last_pose[0], self.robot.pose[0]) and \
+            self.same(self.robot.last_pose[1], self.robot.pose[1]) and \
+            self.same(self.last_magnitude, magnitude):
+            self.stuck_counter += 1
+
+            # can we avoid an obstacle?
+            if self.stuck_counter > STUCK and self.stuck_reset < 0:
+                print "[HELP] \tI am stuck, help me!"
+
+                # reset counters
+                self.stuck_counter = 0
+                self.stuck_reset = STUCK
+
+                return True
+        else:
+            # update counters
+            self.stuck_reset -= 1
+            self.stuck_counter -= 1
+
+        self.robot.print_pose()
+
+        self.stuck_reset -= 1
+        return False
+
+    ## check if two values are the same, according to a margin of error
+    def same(self, a, b):
+        return abs(a-b) < MARGIN_FOR_ERROR
 
     ## get current perception angle and magnitude for robot
     def get_perception_values(self):
@@ -64,8 +109,7 @@ class fuzzy:
             magnitude = math.sqrt(position[0]**2 + position[1]**2)
 
             # clamp useless data
-            magnitude = 0 if magnitude < D_MIN else 1 if \
-                             magnitude > D_MAX else magnitude
+            magnitude = 1 if magnitude > D_MAX else magnitude
 
             angle = sonar_angles[position[3]]
             angle_rad = math.radians(angle)

@@ -108,7 +108,7 @@ class harry_plotter:
         # add robot positions
         world_pose = self.p3dx.get_world_pose()
         if self.ai.is_stuck:
-            self.add_point(int(100 * world_pose[0]), int(100 * world_pose[1]), 2, 'red')
+            self.add_point(int(100 * world_pose[0]), int(100 * world_pose[1]), 5, 'red')
         else:
             self.add_point(int(100 * world_pose[0]), int(100 * world_pose[1]), 1, 'green')
 

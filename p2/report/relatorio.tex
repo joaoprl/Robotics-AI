@@ -10,13 +10,12 @@
 % Não modificar
 \usepackage{IEEEtsup} % Definições complementares e modificações.
 \usepackage[utf8]{inputenc} % Disponibiliza acentos.
-\usepackage[english,brazil]{babel}
+\usepackage[english]{babel}
 %% Disponibiliza Inglês e Português do Brasil.
 \usepackage{latexsym,amsfonts,amssymb} % Disponibiliza fontes adicionais.
 \usepackage{theorem} 
 \usepackage[cmex10]{amsmath} % Pacote matemático básico 
 \usepackage{url} 
-%\usepackage[portuges,brazil,english]{babel}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -27,7 +26,6 @@
 %%*****************************************************************************
 
 \begin{document}
-\selectlanguage{brazil}
 \renewcommand{\IEEEkeywordsname}{Palavras-chave}
 
 %%*****************************************************************************
@@ -58,51 +56,51 @@ entre eles: explorar métodos de controle mais avançados e computar a odometria
 do robô através de um modelo cinemático. Os assuntos são desenvolvidos a partir de
 um ambiente com o robô p3dx, com o suporte do \textit{V-REP}.
 
-O objetivo se trata de fazer o robô explorar o cenário e coletar informações relevantes
-tanto sobre o ambiente quanto sua localização. A solução foi proposta através
-do mapeamento de informações com o Ground Trouth, com o auxílio de gráficos, e utilizando
-o modelo cinemático com a odometria para o controle do robô. Para tornar o controle
-mais robusto, foi utilizado métodos como o sistema \textbf{fuzzy}, para que o robô
-possa acompanhar as paredes, desviar de obstáculos e evitar ficar preso.
+O objetivo se trata de fazer o robô explorar o cenário e coletar informações relevantes tanto sobre o ambiente quanto sua localização. A solução foi proposta através do mapeamento de informações com o Ground Trouth, com o auxílio de gráficos, e utilizando o modelo cinemático com a odometria para o controle do robô. Para tornar o controle mais robusto, foi utilizado métodos como o sistema \textbf{fuzzy}, para que o robô possa acompanhar as paredes, desviar de obstáculos, além de uma subrotina para evitar que fique preso.
 
-O resultado (???) to continue
+O resultado foi um sistema de controle mais robusto com sensores que se assemelham mais a uma situação do mundo real - isto é, sem a utilização de Ground Trouth para se locomover.
+
 % O resumo deve conter uma breve descrição sobre várias partes do seu trabalho que serão tratadas no decorrer do texto. Primeiramente, pode-se descrever brevemente o problema no qual você está trabalhando: Por que você está desenvolvendo este trabalho? Qual a motivação para este desenvolvimento? Por que ele é importante? O resumo deve conter também um breve descritivo da metodologia que você usou no desenvolvimento: Que problema foi tratado? Como a solução foi construída/desenvolvida? Quais as tecnologias utilizadas? Finalmente, deve falar um pouco sobre os resultados que você conseguiu: o resultado final ficou bom? Quais os seus principais diferenciais? Qual a eficiência do desenvolvimento?
+
 \end{abstract}
 
-% Indique três palavras-chave que descrevem o trabalho
 \begin{IEEEkeywords}
 fuzzy, odometria, sistemas inteligentes.
+
+% Indique três palavras-chave que descrevem o trabalho
+
 \end{IEEEkeywords}
 
 %%*****************************************************************************
-% Modifique as seções de acordo com o seu projeto
 
 \section{Introdução}
-O projeto foi baseado na literatura proposta em sala de aula e 
+O projeto foi baseado na literatura proposta em sala de aula e em papers relacionados ao problema proposto, o qual o sistema fuzzy foi baseado \cite{Reinhard:1995}. O foco do projeto se deu à aproximação da simulação com problemas do mundo real, com a introdução de odometria e controladores mais robustos, com foco em sistemas fuzzy.
 
-Na introdução você deve descrever os aspectos mais relevantes sobre a revisão bibliográfica que fez e do problema que você decidiu tratar. Quais foram os pontos estudados/pesquisados? Quais os outros trabalhos similares ao seu que você encontrou? 
+Apesar de sistemas fuzzy serem menos utilizados no estado da arte da robótica atual, há vários trabalhos de anos anteriores que o utilizam para a resolução de problemas. Além disso, ainda é um conceit obastante utilizado para a programação de uma AI em videogames, por exemplo, devido a seu baixo custo computacional.
 
-Também na introdução espera-se que você descreva um pouco sobre a motivação de trabalhar com esse tema. A descrição do seu trabalho será feita em detalhes nas próximas seções do artigo.
+O trabalho encontra-se organizado da seguinte forma: a seção 2, descrevendo o processo realizado para a odometria; a seção 3, apresentando os estados de controle do robô; os resultados são apresentados na seção 4 e, finalmente, as conclusões são apresentadas na seção 5. \textbf{(não sei se vai ser isso?? acho que não)}
 
-No final da introdução, é comum inserir um parágrafo descrevendo o que será encontrado em cada seção no restante do seu texto. Exemplo: Este trabalho encontra-se organizado da seguinte forma: a seção 2 apresenta X. A seção 3 descreve Y. Os resultados são apresentados na seção 4, e as conclusões são apresentadas na seção 5.
+% Na introdução você deve descrever os aspectos mais relevantes sobre a revisão bibliográfica que fez e do problema que você decidiu tratar. Quais foram os pontos estudados/pesquisados? Quais os outros trabalhos similares ao seu que você encontrou? 
+
+% Também na introdução espera-se que você descreva um pouco sobre a motivação de trabalhar com esse tema. A descrição do seu trabalho será feita em detalhes nas próximas seções do artigo.
+
+% No final da introdução, é comum inserir um parágrafo descrevendo o que será encontrado em cada seção no restante do seu texto. Exemplo: Este trabalho encontra-se organizado da seguinte forma: a seção 2 apresenta X. A seção 3 descreve Y. Os resultados são apresentados na seção 4, e as conclusões são apresentadas na seção 5.
 
 \section{Seções}
 
 Utilize outras seções e subseções para abordar o problema. 
 
-\subsection{Uma subseção}
+\section{Odometria}
 
-Se precisar, você pode usar listas, tais como
+\subsection{Modelo cinemático}
 
-\begin{itemize}
- \item Item 1
- \item Item 2
-\end{itemize}
-ou
-\begin{enumerate}
- \item Item 1
- \item Item 2
-\end{enumerate}
+sei lá (??)
+
+\section{Sistema de controle}
+
+\subsection{Sistema fuzzy}
+
+Aqui fala do fuzzy e unstuck, etc.
 
 \section{Trabalho Proposto}
 
@@ -169,18 +167,9 @@ Nesta seção, faça uma análise geral de seu trabalho, levando em conta todo o
 
 \bibliographystyle{IEEEtran}
 
-\bibliography{Relatorio}
+\bibliography{relatorio}
 
 
 %******************************************************************************
-
-\vspace{20ex}
-
-\section*{\Large \textbf{Submissão}}
-
-Seu trabalho deve ser submetido via moodle em conjunto com o código fonte.
-
-\vspace{3ex}
-
 
 \end{document}

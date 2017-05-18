@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 
 import math
 
-V_LINEAR = 2
-V_ANGULAR = .45
+V_LINEAR = 2.0
+V_ANGULAR = 0.45
 
 MARGIN_FOR_ERROR = .01
 D_MIN = .6
@@ -27,6 +27,7 @@ class fuzzy:
 
         self.stuck_counter = 0
         self.stuck_reset = -1
+        self.is_stuck = False
 
         self.last_magnitude = 0
         self.last_angle = 0
@@ -59,7 +60,8 @@ class fuzzy:
         self.vcur += acc
 
         # are we stuck!? begin UNSTUCK state! until we reset it
-        if self.stuck(magnitude, angle) or self.stuck_reset == 0:
+        self.is_stuck = self.stuck(magnitude, angle)
+        if self.is_stuck or self.stuck_reset == 0:
             self.vcur = -(self.vcur + self.vmax/2)
 
             print '[HEY]\t\tI\'m trying to fix my path!'

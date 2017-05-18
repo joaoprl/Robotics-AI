@@ -25,6 +25,8 @@
 \usepackage[noadjust]{cite} % Disponibiliza melhorias em citações.
 %%*****************************************************************************
 
+\usepackage{listings}
+
 \begin{document}
 \renewcommand{\IEEEkeywordsname}{Palavras-chave}
 
@@ -86,10 +88,6 @@ O trabalho encontra-se organizado da seguinte forma: a seção 2, descrevendo o 
 
 % No final da introdução, é comum inserir um parágrafo descrevendo o que será encontrado em cada seção no restante do seu texto. Exemplo: Este trabalho encontra-se organizado da seguinte forma: a seção 2 apresenta X. A seção 3 descreve Y. Os resultados são apresentados na seção 4, e as conclusões são apresentadas na seção 5.
 
-\section{Seções}
-
-Utilize outras seções e subseções para abordar o problema. 
-
 \section{Odometria}
 
 \subsection{Modelo cinemático}
@@ -98,9 +96,22 @@ sei lá (??)
 
 \section{Sistema de controle}
 
-\subsection{Sistema fuzzy}
+O sistema de controle foi dividido em dois comportamentos distintos: o Wall Follow, que permite que o robô siga a parede ao mesmo tempo que procura desviar de obstáculos; e o Unstuck, o qual verifica se o robô está preso e, caso afirmativo, o retira desse estado.
 
-Aqui fala do fuzzy e unstuck, etc.
+\subsection{Wall Follow}
+
+O Wall Follow foi baseado no sistema fuzzy da literatura \cite{Reinhard:1995}. Basicamente, foram utilizadas duas regras: \textbf{directional} e \textbf{speed}, que regula a direção e a velocidade do robô. Os inputs e as regras de  defuzzification utilizados estão ilustrados nas figuras abaixo.
+
+Como os parâmetros dos inputs não eram, necessariamente, adequados para o nosso robô do experimento, foram utilizado valores de escala para a velocidade angular $v_{a} = .45$ e para a velocidade linear $v_{l} = 2$. Dessa forma, o algoritmo se baseia na seguinte iteração:
+
+  \subsubsection{Encontra valor da magnitude e ângulo do obstáculo mais próximo}
+  \subsubsection{Escala os valores da magnitude de 0 (very low) a 1 (very high perception)}
+  \subsubsection{Aplica os valores em nosso sistema fuzzy, obtendo velocidade angular e a aceleração da velocidade}
+  \subsubsection{Verifica se o robô está preso}
+  \subsubsection{Atualiza os valores}
+
+
+\subsection{Unstuck}
 
 \section{Trabalho Proposto}
 
@@ -149,7 +160,7 @@ Uma figura pode ser posicionada em qualquer lugar no texto, como no exemplo segu
 \end{figure}
 
 Use o comando ``cite'' para citar itens na sua lista de
-referências através dos seus rótulos. Exemplo: \cite{Rowling:1997}\cite{Reynolds:2009a}\cite{Michalowski:2006}.
+referências através dos seus rótulos.
 
 
 \section{Resultados e Discussão}

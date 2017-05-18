@@ -81,6 +81,44 @@ class simulator:
 
         return pos
 
+    def init_string_as_floats(self, signal_name):
+        status, string_signal = vrep.simxGetStringSignal(self.id, signal_name, \
+                                        vrep.simx_opmode_streaming)
+        float_array = vrep.simxUnpackFloats(string_signal)
+
+        if status is ERROR:
+            raise Exception('Unable to init sensor!')
+
+        return float_array
+
+    def get_string_as_floats(self, signal_name):
+        status, string_signal = vrep.simxGetStringSignal(self.id, signal_name, \
+                                        vrep.simx_opmode_buffer)
+        float_array = vrep.simxUnpackFloats(string_signal)
+
+        if status is ERROR:
+            raise Exception('Unable to init sensor!')
+
+        return float_array
+
+    def init_float_signal(self, signal_name):
+        status, float_signal = vrep.simxGetFloatSignal(self.id, signal_name, \
+                                        vrep.simx_opmode_streaming)
+
+        if status is ERROR:
+            raise Exception('Unable to init sensor!')
+
+        return float_signal
+
+    def get_float_signal(self, signal_name):
+        status, float_signal = vrep.simxGetFloatSignal(self.id, signal_name, \
+                                        vrep.simx_opmode_buffer)
+
+        if status is ERROR:
+            raise Exception('Unable to init sensor!')
+
+        return float_signal
+
     def get_velocity(self, handle):
         # return linear and angular velocity
         status, linear, angular = vrep.simxGetObjectVelocity(self.id, handle, \

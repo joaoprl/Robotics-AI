@@ -14,7 +14,7 @@ def main():
     sim = simulator("127.0.0.1", 25000)
     sim.connect()
 
-    p3dx = robot(sim, "Pioneer_p3dx", True)
+    p3dx = robot(sim, "Pioneer_p3dx", False, True)
     ai = fuzzy(p3dx)
     #ai = robotAI(p3dx)
     hp = harry_plotter(p3dx, ai)

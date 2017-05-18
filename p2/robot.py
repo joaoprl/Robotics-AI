@@ -14,6 +14,8 @@ RIGHT_WHEEL = "_rightWheel"
 LEFT_MOTOR = "_leftMotor"
 RIGHT_MOTOR = "_rightMotor"
 
+GYRO_SENSOR = "_GyroSensorOrientation"
+
 # name and total of sensors
 SONAR_SENSOR = "_ultrasonicSensor"
 NUM_SONARS = 16
@@ -24,11 +26,12 @@ SONAR_HEIGHT = 0.21
 
 # robot class definition
 class robot:
-    def __init__(self, sim, name, use_ground_truth=False):
+    def __init__(self, sim, name, use_ground_truth=False, use_gyroscope=True):
         self.sim = sim                          # simulation environment
         self.name = name                        # robot's name
         self.handle = self.sim.get_handle(name) # robot's id handle
         self.use_ground_truth = use_ground_truth
+        self.use_gyroscope = use_gyroscope
 
         self.L = WHEEL_DISTANCE
         self.R = WHEEL_RADIUS
@@ -71,6 +74,10 @@ class robot:
         self.last_pose = np.zeros(3)
         self.true_v_linear = self.true_v_angular = 0
         self.v_linear = self.v_angular = 0
+
+        # init gyroscope
+        self.gyroscope = self.name + GYRO_SENSOR
+        self.pose[2] = self.sim.init_float_signal(self.gyroscope)
 
         # update values and dicard first batch
         self.update()
@@ -137,18 +144,33 @@ class robot:
             self.v_linear = (wheel_v_linear[0] + wheel_v_linear[1]) / 2
             self.v_angular = (wheel_v_linear[0] - wheel_v_linear[1]) / self.L
 
-            #composed_v_angular = wheel_v_linear / self.L
-            #turn_radius = self.v_linear / self.v_angular
+            # calculate orientation angle delta
+            if self.use_gyroscope:
+                angle_delta = self.sim.get_float_signal(self.gyroscope) - self.last_pose[2]
+                if abs(angle_delta) >= math.pi:
+                    if delta < 0:
+                        angle_delta = angle_delta + 2 * math.pi
+                    else:
+                        angle_delta = angle_delta - 2 * math.pi
+            else:
+                angle_delta = self.v_angular * tick_time
+            new_angle = self.last_pose[2] + angle_delta / 2
 
             # calculate difference in pose
             delta_s = self.v_linear * tick_time
-            delta_theta = self.v_angular * tick_time
-            new_theta = self.pose[2] + delta_theta / 2
-            delta_pose = np.array([delta_s * math.cos(new_theta), delta_s * math.sin(new_theta), delta_theta])
+            delta_pose = np.zeros(3)
+            delta_pose[0] = delta_s * math.cos(new_angle)
+            delta_pose[1] = delta_s * math.sin(new_angle)
+            delta_pose[2] = angle_delta
 
-            # save last pose and update current one
-            self.last_pose = self.pose
+            # save update current pose
             self.pose = self.pose + delta_pose
+
+            # clamp angle between -pi and pi
+            if self.pose[2] > math.pi:
+                self.pose[2] -= 2 * math.pi
+            elif self.pose[2] <= -math.pi:
+                self.pose[2] += 2 * math.pi
 
         # update pose with odometry
         self.pose = np.copy(self.pose)

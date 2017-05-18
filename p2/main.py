@@ -7,7 +7,6 @@ from time import time
 from simulator import simulator
 from robot import robot
 from fuzzy import fuzzy
-from robotAI import robotAI
 from harry_plotter import harry_plotter
 
 def main():
@@ -16,7 +15,6 @@ def main():
 
     p3dx = robot(sim, "Pioneer_p3dx", False, True)
     ai = fuzzy(p3dx)
-    #ai = robotAI(p3dx)
     hp = harry_plotter(p3dx, ai)
 
     tick_time = 0

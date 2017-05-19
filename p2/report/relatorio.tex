@@ -63,9 +63,9 @@ entre eles: explorar métodos de controle mais avançados e computar a odometria
 do robô através de um modelo cinemático. Os assuntos são desenvolvidos a partir de
 um ambiente com o robô p3dx, com o suporte do \textit{V-REP}.
 
-O objetivo se trata de fazer o robô explorar o cenário e coletar informações relevantes tanto sobre o ambiente quanto sua localização. A solução foi proposta através do mapeamento de informações com o Ground Trouth, com o auxílio de gráficos, e utilizando o modelo cinemático com a odometria para o controle do robô. Para tornar o controle mais robusto, foi utilizado métodos como o sistema \textbf{fuzzy}, para que o robô possa acompanhar as paredes, desviar de obstáculos, além de uma subrotina para evitar que fique preso.
+O objetivo foi de levar o robô a explorar o cenário e a coletar informações relevantes tanto sobre o ambiente quanto a sua localização. A solução foi proposta através do mapeamento de informações com o ground truth - com o auxílio de gráficos, e utilizando o modelo cinemático com a odometria para o controle do robô. Para tornar o controle mais robusto, foi utilizado métodos como conjuntos \textbf{fuzzy}, para que o robô possa acompanhar as paredes, desviar de obstáculos, além de uma subrotina para evitar que fique preso.
 
-O resultado foi um sistema de controle mais robusto com sensores que se assemelham mais a uma situação do mundo real - isto é, sem a utilização de Ground Trouth para se locomover.
+O resultado obtido foi um sistema de controle mais robusto com sensores que se assemelham mais a uma situação do mundo real - isto é, sem a utilização de ground truth para se locomover.
 
 % O resumo deve conter uma breve descrição sobre várias partes do seu trabalho que serão tratadas no decorrer do texto. Primeiramente, pode-se descrever brevemente o problema no qual você está trabalhando: Por que você está desenvolvendo este trabalho? Qual a motivação para este desenvolvimento? Por que ele é importante? O resumo deve conter também um breve descritivo da metodologia que você usou no desenvolvimento: Que problema foi tratado? Como a solução foi construída/desenvolvida? Quais as tecnologias utilizadas? Finalmente, deve falar um pouco sobre os resultados que você conseguiu: o resultado final ficou bom? Quais os seus principais diferenciais? Qual a eficiência do desenvolvimento?
 
@@ -81,17 +81,11 @@ fuzzy, odometria, sistemas inteligentes.
 %%*****************************************************************************
 
 \section{Introdução}
-O projeto foi baseado na literatura proposta em sala de aula e em papers relacionados ao problema proposto, o qual o sistema fuzzy foi baseado \cite{Reinhard:1995}. O foco do projeto se deu à aproximação da simulação com problemas do mundo real, com a introdução de odometria e controladores mais robustos, com foco em sistemas fuzzy.
+O projeto foi baseado na literatura proposta em sala de aula e em artigos relacionados ao problema proposto, o qual o sistema fuzzy foi baseado \cite{Reinhard:1995}, por exemplo. O foco do projeto se deu à aproximação da simulação com problemas do mundo real, com a introdução de odometria e controladores mais robustos, com foco em conjuntos fuzzy.
 
-Apesar de sistemas fuzzy serem menos utilizados no estado da arte da robótica atual, há vários trabalhos de anos anteriores que o utilizam para a resolução de problemas. Além disso, ainda é um conceit obastante utilizado para a programação de uma AI em videogames, por exemplo, devido a seu baixo custo computacional.
+Apesar de conjuntos fuzzy serem menos utilizados no estado da arte da robótica atual, há vários trabalhos de anos anteriores que o utilizam para a resolução de problemas. Além disso, ainda é um conceitp bastante utilizado para a programação de uma AI em videogames, por exemplo, devido a seu baixo custo computacional.
 
-O trabalho encontra-se organizado da seguinte forma: a seção 2, descrevendo o modelo cinemático utilizado; a seção 3, descrevendo o processo realizado para a odometria; a seção 4, apresentando os estados de controle do robô; os resultados são apresentados na seção 5 e, finalmente, as conclusões são apresentadas na seção 6. \textbf{(não sei se vai ser isso?? acho que não)}
-
-% Na introdução você deve descrever os aspectos mais relevantes sobre a revisão bibliográfica que fez e do problema que você decidiu tratar. Quais foram os pontos estudados/pesquisados? Quais os outros trabalhos similares ao seu que você encontrou? 
-
-% Também na introdução espera-se que você descreva um pouco sobre a motivação de trabalhar com esse tema. A descrição do seu trabalho será feita em detalhes nas próximas seções do artigo.
-
-% No final da introdução, é comum inserir um parágrafo descrevendo o que será encontrado em cada seção no restante do seu texto. Exemplo: Este trabalho encontra-se organizado da seguinte forma: a seção 2 apresenta X. A seção 3 descreve Y. Os resultados são apresentados na seção 4, e as conclusões são apresentadas na seção 5.
+O trabalho encontra-se organizado da seguinte forma: a seção 2, descrevendo o modelo cinemático utilizado; a seção 3, descrevendo o processo realizado para a odometria; a seção 4, apresentando os sistemas de controle do robô; os resultados são apresentados na seção 5 e, finalmente, as conclusões são apresentadas na seção 6. 
 
 \section{Modelo cinemático}
 
@@ -141,40 +135,56 @@ O sistema de controle foi dividido em dois comportamentos distintos: o Wall Foll
 
 \subsection{Wall Follow}
 
-O Wall Follow foi baseado em conjuntos Fuzzy da literatura \cite{Reinhard:1995}. Basicamente, foram utilizadas duas regras: \textbf{directional} e \textbf{speed}, que regula a direção e a velocidade do robô. Os inputs e as regras de  defuzzification utilizados estão ilustrados nas figuras abaixo.
+O Wall Follow foi baseado em conjuntos Fuzzy da literatura \cite{Reinhard:1995}. Basicamente, foram utilizadas duas regras: \textbf{directional} e \textbf{speed}, os quais regulam a direção e a velocidade do robô. Os inputs e regras de \textit{defuzzification} utilizados estão ilustrados nas figuras abaixo.
 
-\begin{figure}[]
+\begin{figure}[ht!]
   \centering
   \includegraphics[width=1\hsize]{figuras/per_angle.png}
-  \caption{Ângulo em que o robô detectou o obstáculo, ie. parede.}
+  \caption{Conjunto Fuzzy do ângulo em que o robô detectou o obstáculo, ie. uma parede. Fonte \cite{Reinhard:1995}}
   \label{fig:fig1}
+\end{figure}
+
+\begin{figure}[ht!]
+  \centering
   \includegraphics[width=1\hsize]{figuras/per.png}
-  \caption{Um exemplo de figura.}
+  \caption{Conjunto Fuzzy da intensidade da percepção que o robô obteve do obstáculo. Fonte \cite{Reinhard:1995}}
   \label{fig:fig2}
+\end{figure}
+
+\begin{figure}[ht!]
+  \centering
   \includegraphics[width=1\hsize]{figuras/per_change.png}
-  \caption{Um exemplo de figura.}
+  \caption{Conjunto Fuzzy da diferença da intensidade de percepção em relação à iteração anterior. Fonte \cite{Reinhard:1995}}
   \label{fig:fig3}
+\end{figure}
 
+\begin{figure}[ht!]
+  \centering
   \includegraphics[width=1\hsize]{figuras/steer.png}
-  \caption{Um exemplo de figura.}
+  \caption{Conjunto Fuzzy para que o robô possa mudar a direção. Fonte \cite{Reinhard:1995}}
   \label{fig:fig4}
+\end{figure}
 
+\begin{figure}[ht!]
+  \centering
   \includegraphics[width=1\hsize]{figuras/acc.png}
-  \caption{Um exemplo de figura.}
+  \caption{Conjunto Fuzzy de valores para aceleração. Fonte \cite{Reinhard:1995}}
   \label{fig:fig5}
 \end{figure}
 
-Para facilitar a criação de regras e de conjuntos Fuzzy, foi utilizada a biblioteca \texttt{skfuzzy}, de python. Além disso, como os parâmetros dos inputs não eram, necessariamente, adequados para o nosso robô do experimento (devido a fatores como o peso do robô, por exemplo), foram utilizado valores de escala para a velocidade angular $v_{a} = .45$ e para a velocidade linear $v_{l} = 2$. 
+Para facilitar a criação de regras e de conjuntos Fuzzy, foi utilizada a biblioteca \texttt{skfuzzy}, em python. Além disso, como os parâmetros dos inputs não eram, necessariamente, adequados para o nosso robô do experimento (devido a fatores como o peso do robô, por exemplo), foram utilizado valores de escala para a velocidade angular $v_{a} = .45$ e para a velocidade linear $v_{l} = 2$. 
 
 Portanto, o algoritmo se baseia na seguinte iteração: \\
 
   \subsubsection{Encontra valor da magnitude e ângulo do obstáculo mais próximo}
-    Para isso, basta encontrar o valor da menor leitura dentre os sensores, e o seu respectivo ângulo. 
+    Basta encontrar o valor da menor leitura dentre os sensores, e o seu respectivo ângulo. 
 
     O valor é escalado para que quanto mais perto o objeto, mais próximo de 1 - ou seja, $p = 1-p'$, com $p'$ sendo a leitura mínima do sensor. O valor do ângulo é retornado em graus (dentre $-170^{\circ}$ a $170^{\circ}$). \\
 
   \subsubsection{Reflete os valores em nossos conjuntos Fuzzy, obtendo velocidade angular e a aceleração da velocidade}
-    Para cada uma das duas regras, \textbf{directional} e \textbf{speed}, bastou-se passar os parâmetros obtidos e obter o output da defuzzification. Para obter o valor de \texttt{perception\_change}, basta obter a diferença de percepção em relação a última iteração. O código abaixo ilustra os processos realizados.
+    Para cada uma das duas regras, \textbf{directional} e \textbf{speed}, bastou-se passar os parâmetros obtidos e obter o output da \textit{defuzzification}. Para obter o valor de \texttt{perception\_change}, basta obter a diferença de percepção em relação a última iteração. 
+
+    O código abaixo ilustra os processos realizados. \newpage
 
     \begin{lstlisting}[caption={Aplicação dos conjuntos fuzzy}]
 angle, magnitude = self.get_perception_values()
@@ -196,54 +206,49 @@ acc = math.radians(speed.output['acceleration'])
     \end{lstlisting}
 
   \subsubsection{Verifica se o robô está preso}
-  \subsubsection{Atualiza os valores}
+    Após obter os valores apropriados para a atualização do robô, é verificado se o robô está em uma situação que está preso ou não. Mais detalhes sobre esse algoritmo encontram-se na próxima sessão.
 
+  \subsubsection{Atualiza os valores}
+    Finalmente, o robô atualiza os valores para a API em python, \texttt{robot.py}, a qual faz conexão com o \textit{V-REP}.
 
 \subsection{Unstuck}
+    O robô possui, ainda, uma subrotina de estado utilizada caso ele esteja preso. Basicamente, ela mantém há quanto tempo o robô está na mesma posição e com a mesma percepção dos sensores. Caso ele esteja parado há mais de $S = 5$ iterações, ele inicia o estado de \textbf{unstuck}.
 
-\section{Trabalho Proposto}
+    Nesse estado, sua velocidade será invertida. Entretanto, as funções aplicadas ao conjunto fuzzy ainda permanecem funcionando, permitindo mais mobilidade para o robô se retirar. Após $S$ iterações, ele sai do modo que está preso e volta a seu estado anterior.
 
-Nesta seção descreva de forma abrangente, porém clara e organizada, o seu trabalho.
+    Alguns \textit{corner cases} foram considerados para a construção do comportamento: como o caso em que o robô fica preso enquanto está no estado \textbf{unstuck}, etc. 
 
-\subsection{Tabelas}
+    De forma a verificar se estava tudo funcionando corretamente, foram aplicados recursos de \textbf{debug} para examinar os \textit{edge} e \textit{corner cases} - como logs na tela, por exemplo.
 
-Uma tabela pode ser posicionada em qualquer lugar no texto, como no exemplo
-seguinte.
-%
+
 \begin{table}[ht]
-\renewcommand{\arraystretch}{1.3}
-\centering
- \caption{Exemplo de texto de uma tabela.}
- \label{tab:tab1}
- \begin{tabular}{lcccc}\hline
-  & \multicolumn{2}{c}{Texto}
-  & \multicolumn{2}{c}{Sem \#21} \\ \cline{2-5}
-  X & Y & $z$ & $\mathcal{A}$ & valor-$z$ \\ \hline \hline
-  1      &0,491  & 3,66   &0,367 &2,46  \\
-  2    &0,732  & 4,21   &0,354 &1,50  \\
-  3      &0,000  & -      &0,000 & -    \\
-  4      &0,000  & -      &0,000 & -  \\
-  5      &0,421  & 1,94   &0,668 &2,79  \\
-  6      &0,421  & 1,94   &0,668 &2,79  \\
-  7      &0,938  & 3,92   &1,295 &4,67 \\
-  8       &0,000  & -      &0,000 & - \\
-  9       &0,356  & 1,40   &0,491 &1,87 \\ \hline
- \end{tabular}
+  \renewcommand{\arraystretch}{1.3}
+  \centering
+   \caption{Regra \textbf{directional}, que define a direção do robô. Fonte \cite{Reinhard:1995}}
+   \label{tab:tab1}
+   \begin{tabular}{lccccc}\hline
+      $p$       & \textbf{VL} & \textbf{L}  & \textbf{M}  & \textbf{H}  & \textbf{VH} \\
+      $\alpha$  &    &    &    &    &    \\ \hline
+       \textbf{RB}  & HR & HR & R  & R  & C  \\ \hline
+       \textbf{RF}  & C  & L  & L  & HL & HL \\ \hline
+       \textbf{LF}  & C  & R  & R  & HR & HR \\ \hline
+       \textbf{LB}  & HL & HL & L  & L  & C  \\ \hline
+   \end{tabular}
 \end{table}
 
-Para citar esta tabela, em qualquer ponto no texto, como Tabela~\ref{tab:tab1}.
-
-
-\section{Materiais e Métodos}
-
-Todo trabalho deve ser submetido a algum tipo de teste para que possa ser avaliado. Na verdade, buscamos aqui uma validação com um caráter mais científico de seu trabalho (validação de hipótese). Busca-se identificar quais os seus pontos fortes e fracos. Nesta seção você deve descrever claramente quais foram e como foram conduzidos os testes, quais os materiais e as metodologias empregadas.   
-
-Uma figura pode ser posicionada em qualquer lugar no texto, como no exemplo seguinte da Figura~\ref{fig:plot1}.
-
-
-Use o comando ``cite'' para citar itens na sua lista de
-referências através dos seus rótulos.
-
+\begin{table}[ht]
+  \renewcommand{\arraystretch}{1.3}
+  \centering
+   \caption{Regra \textbf{speed}, que define a aceleração do robô. Fonte \cite{Reinhard:1995}}
+   \label{tab:tab1}
+   \begin{tabular}{lccccc}\hline
+      $p$   & \textbf{VL}    & \textbf{L}    & \textbf{ME} & -- \\
+      $p*$  & or \textbf{VH} & or \textbf{H} &    &    \\ \hline
+      \textbf{ZE}  & ZE    & P    & P  & -- \\ \hline
+      \textbf{L}   & EB    & B    & Z  & -- \\ \hline
+      \textbf{H}   & --    & --   & -- & EB \\ \hline
+   \end{tabular}
+\end{table}
 
 \section{Resultados e Discussão}
 
@@ -262,12 +267,12 @@ Nesse exemplo também é possível ver que o robô executando $Wall Follow$ de f
 
 \section{Conclusões}
 
-Nesta seção, faça uma análise geral de seu trabalho, levando em conta todo o processo de desenvolvimento e os resultados. Quais os seus pontos fortes? Quais os seus pontos fracos? Quais aspectos de sua metodologia de trabalho foram positivas? Quais foram negativas? O que você recomendaria (ou não recomendaria) a outras pessoas que estejam realizando trabalhos similares aos seus? 
+Em geral, o trabalho foi consistente em relação à aplicação de conceitos aprendidos em sala de aula, além da exploração e utilização de soluções alternativas. Os resultados foram relativamente satisfatórios, com uma odometria consistente e um sistema de controle razoavelmente esperto. Entretanto, ainda há bastante espaço para explorar na questão da inteligência e aprendizado do robô, que continua limitado a alguns parâmetros, sem muita informação a respeito do ambiente. 
 
+No desenvolvimento de futuras aplicações, seria considerada a possibilidade de estruturar com antecedência alguns parâmetros em relação à percepção do robô - talvez estruturndo-as melhor com outros recursos de sensibilidade oferecida pelo \textit{V-REP}, ou testar edge cases que sejam mais tangentes ao mundo real.
 
 %******************************************************************************
 % Referências - Definidas no arquivo relatorio.bib
- +-------------+
 
 \bibliographystyle{IEEEtran}
 

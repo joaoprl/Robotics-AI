@@ -45,3 +45,6 @@ __pycache__/
 *.fls
 *.synctex.gz
 *.lb
+*.bbl
+*.blg
+*.brf

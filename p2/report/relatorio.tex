@@ -23,6 +23,9 @@
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
 \usepackage[tight,footnotesize]{subfigure} 
 \usepackage[noadjust]{cite} % Disponibiliza melhorias em citações.
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
 %%*****************************************************************************
 
 \usepackage{listings}
@@ -82,7 +85,7 @@ O projeto foi baseado na literatura proposta em sala de aula e em papers relacio
 
 Apesar de sistemas fuzzy serem menos utilizados no estado da arte da robótica atual, há vários trabalhos de anos anteriores que o utilizam para a resolução de problemas. Além disso, ainda é um conceit obastante utilizado para a programação de uma AI em videogames, por exemplo, devido a seu baixo custo computacional.
 
-O trabalho encontra-se organizado da seguinte forma: a seção 2, descrevendo o processo realizado para a odometria; a seção 3, apresentando os estados de controle do robô; os resultados são apresentados na seção 4 e, finalmente, as conclusões são apresentadas na seção 5. \textbf{(não sei se vai ser isso?? acho que não)}
+O trabalho encontra-se organizado da seguinte forma: a seção 2, descrevendo o modelo cinemático utilizado; a seção 3, descrevendo o processo realizado para a odometria; a seção 4, apresentando os estados de controle do robô; os resultados são apresentados na seção 5 e, finalmente, as conclusões são apresentadas na seção 6. \textbf{(não sei se vai ser isso?? acho que não)}
 
 % Na introdução você deve descrever os aspectos mais relevantes sobre a revisão bibliográfica que fez e do problema que você decidiu tratar. Quais foram os pontos estudados/pesquisados? Quais os outros trabalhos similares ao seu que você encontrou? 
 
@@ -90,11 +93,47 @@ O trabalho encontra-se organizado da seguinte forma: a seção 2, descrevendo o 
 
 % No final da introdução, é comum inserir um parágrafo descrevendo o que será encontrado em cada seção no restante do seu texto. Exemplo: Este trabalho encontra-se organizado da seguinte forma: a seção 2 apresenta X. A seção 3 descreve Y. Os resultados são apresentados na seção 4, e as conclusões são apresentadas na seção 5.
 
+\section{Modelo cinemático}
+
+O modelo cinemático do robô utilizado foi o diferencial. Para isso, é necessário calcular a velocidade linear de cada uma das duas rodas, $V_{r}$ (roda direita) e $V_{l}$ (roda esquerda). Esses dois valores são calculados da seguinte forma:
+\begin{gather*}
+V_{r} = r * \phi_{r} \\
+V_{l} = r * \phi_{l},
+\end{gather*}
+onde $r$ é o raio da roda e $\phi_{r}$ e $\phi_{l}$ são as velocidades angulares de cada roda. Essas velocidades são calculadas através das diferenças de posição angulares das rodas em um certo $\Delta t$, dividindo a variação angular pela variação de tempo.
+
+Então, calcula-se as velocidades linear e angular do robô da seguinte forma:
+\begin{gather*}
+V = \frac{V_{r} + V_{l}}{2} \\
+\omega = \frac{V_{r} - V_{l}}{2 * L},
+\end{gather*}
+onde L é metade da distância entre as rodas. A partir dessas duas velocidades, calcula-se a variação de distância e ângulo para uma certa variação de tempo. 
+\begin{gather*}
+\Delta s = V * \Delta t \\
+\Delta \theta = \omega * \Delta t
+\end{gather*}
+Com essas variações, pode-se somar à posição atual para calcular uma posição nova.
+
+\subsection{Sistema de referência}
+
+Como o robô calcula apenas variações de posição e ângulo, ele não sabe sua posição exata no mundo, mas apenas no seu sistema de referência local. Para converter essa posição local para uma posição no mundo, foi implementado um conversor entre modelos de referências. Esse conversor cria e salva as matrizes de rotação e translação para converter a qualquer momento. Porém, para que isso seja possível, é necessário inserir a posição inicial do robô no mundo.
+
 \section{Odometria}
 
-\subsection{Modelo cinemático}
+Como não era permitido usar o ground truth do robô e os resultados do modelo cinemático básico são insatisfatórios, foi necessário calcular a sua odometria para estimar uma variação de pose mais precisa. Para um certo frame $t$, pode-se calcular essa variação por:
+\begin{gather*}
+\Delta \xi_{t} =
+\begin{bmatrix}
+\Delta s * \cos(\theta_{t-1} + \frac{\Delta \theta_{t}}{2}) \\
+\Delta s * \sin(\theta_{t-1} + \frac{\Delta \theta_{t}}{2}) \\
+\theta_{t}
+\end{bmatrix}
+\end{gather*}
+Somando essa variação a cada frame, obtemos um valor de pose mais próximo da realidade comparado ao anterior.
 
-sei lá (??)
+\subsection{Correção}
+
+Apesar de obter-se resultados melhores com a odometria, a variação de ângulo ainda é muito imprecisa e propaga muitos erros. Para um valor mais preciso, utilizou-se um giroscópio. O giroscópio originalmente retorna apenas variações de ângulo, mas como não pode-se garantir que será possível ler  o giroscópio sempre que dados novos aparecerem, ele foi modificado para somar essas variações e sempre retornar a sua estimativa de posição angular. As equações de odometria não mudam, mas apenas utilizam o novo valor de $\Delta \theta$.
 
 \section{Sistema de controle}
 
@@ -199,14 +238,8 @@ Para citar esta tabela, em qualquer ponto no texto, como Tabela~\ref{tab:tab1}.
 
 Todo trabalho deve ser submetido a algum tipo de teste para que possa ser avaliado. Na verdade, buscamos aqui uma validação com um caráter mais científico de seu trabalho (validação de hipótese). Busca-se identificar quais os seus pontos fortes e fracos. Nesta seção você deve descrever claramente quais foram e como foram conduzidos os testes, quais os materiais e as metodologias empregadas.   
 
-Uma figura pode ser posicionada em qualquer lugar no texto, como no exemplo seguinte da Figura~\ref{fig:fig1}.
+Uma figura pode ser posicionada em qualquer lugar no texto, como no exemplo seguinte da Figura~\ref{fig:plot1}.
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=1\hsize]{figuras/pipeline.png}
-\caption{Um exemplo de figura.}
-\label{fig:fig1}
-\end{figure}
 
 Use o comando ``cite'' para citar itens na sua lista de
 referências através dos seus rótulos.
@@ -214,7 +247,18 @@ referências através dos seus rótulos.
 
 \section{Resultados e Discussão}
 
-Nesta seção você deve apresentar claramente os resultados obtidos para os testes efetuados. Procure organizar os dados utilizando uma linguagem científica. Algumas opções são o uso de tabelas e gráficos, para que a compreensão seja fácil e rápida. 
+Para análise dos resultados, foi extraída uma nuvem de pontos representando as posições calculada (em verde) e ground true (em azul) do robô, as posições com obstáculos detectados pelos sonares (em preto), e também as posições onde o robô foi detectado como preso (em vermelho). Um exemplo do código rodando pode ser visto na Figura~\ref{fig:plot1}.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{figuras/figure_3.png}
+\caption{Um exemplo de plot gerado. Os círculos amarelos representam momentos a serem discutidos.}
+\label{fig:plot1}
+\end{figure}
+
+Nesse exemplo, o robô começa sua posição em \circled{1}. Entre esse momento, e o momento \circled{2}, as linhas azul e verdes são indicerníveis por terem um valor muito próximo. Porém nota-se que em \circled{2}, o robô fica preso por um tempo tentando andar através de um obstáculo. Nesse instante, ocorre derrapagem e a posição estimada do robô é comprometida. Isso é notável no caminho até o momento \circled{3}, onde as linhas já estão relativamente separadas. Porém, nota-se que a orientação estimada continua alinhada com a orientação real, não sendo afetada por erros de derrapagem por ser calculada através de um giroscópio.
+
+Nesse exemplo também é possível ver que o robô executando $Wall Follow$ de fato segue paredes, mas em vários momentos esbarra em paredes e fica preso. Nesses momentos, o robô entra em modo $Unstuck$ e eventualmente consegue sair. Porém, devido à tendência de ficar preso, as estimativas de pose do robô tendem a piorar nesses momentos.
 
 \section{Conclusões}
 
@@ -222,13 +266,12 @@ Nesta seção, faça uma análise geral de seu trabalho, levando em conta todo o
 
 
 %******************************************************************************
-% Referências - Definidas no arquivo Relatorio.bib
+% Referências - Definidas no arquivo relatorio.bib
  +-------------+
 
 \bibliographystyle{IEEEtran}
 
 \bibliography{relatorio}
-
 
 %******************************************************************************
 

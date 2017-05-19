@@ -26,6 +26,8 @@
 %%*****************************************************************************
 
 \usepackage{listings}
+\lstset{basicstyle=\footnotesize\ttfamily,  language=Python}
+\renewcommand{\lstlistingname}{Code}% Listing -> Algorithm
 
 \begin{document}
 \renewcommand{\IEEEkeywordsname}{Palavras-chave}
@@ -100,13 +102,60 @@ O sistema de controle foi dividido em dois comportamentos distintos: o Wall Foll
 
 \subsection{Wall Follow}
 
-O Wall Follow foi baseado no sistema fuzzy da literatura \cite{Reinhard:1995}. Basicamente, foram utilizadas duas regras: \textbf{directional} e \textbf{speed}, que regula a direção e a velocidade do robô. Os inputs e as regras de  defuzzification utilizados estão ilustrados nas figuras abaixo.
+O Wall Follow foi baseado em conjuntos Fuzzy da literatura \cite{Reinhard:1995}. Basicamente, foram utilizadas duas regras: \textbf{directional} e \textbf{speed}, que regula a direção e a velocidade do robô. Os inputs e as regras de  defuzzification utilizados estão ilustrados nas figuras abaixo.
 
-Como os parâmetros dos inputs não eram, necessariamente, adequados para o nosso robô do experimento, foram utilizado valores de escala para a velocidade angular $v_{a} = .45$ e para a velocidade linear $v_{l} = 2$. Dessa forma, o algoritmo se baseia na seguinte iteração:
+\begin{figure}[]
+  \centering
+  \includegraphics[width=1\hsize]{figuras/per_angle.png}
+  \caption{Ângulo em que o robô detectou o obstáculo, ie. parede.}
+  \label{fig:fig1}
+  \includegraphics[width=1\hsize]{figuras/per.png}
+  \caption{Um exemplo de figura.}
+  \label{fig:fig2}
+  \includegraphics[width=1\hsize]{figuras/per_change.png}
+  \caption{Um exemplo de figura.}
+  \label{fig:fig3}
+
+  \includegraphics[width=1\hsize]{figuras/steer.png}
+  \caption{Um exemplo de figura.}
+  \label{fig:fig4}
+
+  \includegraphics[width=1\hsize]{figuras/acc.png}
+  \caption{Um exemplo de figura.}
+  \label{fig:fig5}
+\end{figure}
+
+Para facilitar a criação de regras e de conjuntos Fuzzy, foi utilizada a biblioteca \texttt{skfuzzy}, de python. Além disso, como os parâmetros dos inputs não eram, necessariamente, adequados para o nosso robô do experimento (devido a fatores como o peso do robô, por exemplo), foram utilizado valores de escala para a velocidade angular $v_{a} = .45$ e para a velocidade linear $v_{l} = 2$. 
+
+Portanto, o algoritmo se baseia na seguinte iteração: \\
 
   \subsubsection{Encontra valor da magnitude e ângulo do obstáculo mais próximo}
-  \subsubsection{Escala os valores da magnitude de 0 (very low) a 1 (very high perception)}
-  \subsubsection{Aplica os valores em nosso sistema fuzzy, obtendo velocidade angular e a aceleração da velocidade}
+    Para isso, basta encontrar o valor da menor leitura dentre os sensores, e o seu respectivo ângulo. 
+
+    O valor é escalado para que quanto mais perto o objeto, mais próximo de 1 - ou seja, $p = 1-p'$, com $p'$ sendo a leitura mínima do sensor. O valor do ângulo é retornado em graus (dentre $-170^{\circ}$ a $170^{\circ}$). \\
+
+  \subsubsection{Reflete os valores em nossos conjuntos Fuzzy, obtendo velocidade angular e a aceleração da velocidade}
+    Para cada uma das duas regras, \textbf{directional} e \textbf{speed}, bastou-se passar os parâmetros obtidos e obter o output da defuzzification. Para obter o valor de \texttt{perception\_change}, basta obter a diferença de percepção em relação a última iteração. O código abaixo ilustra os processos realizados.
+
+    \begin{lstlisting}[caption={Aplicação dos conjuntos fuzzy}]
+angle, magnitude = self.get_perception_values()
+
+perception_change = 
+      clamp(abs(magnitude-last_magnitude))
+
+# get ANGULAR speed for robot
+directional.input['perception_angle'] = angle
+directional.input['general_perception'] = magnitude
+directional.compute()
+v_angular = math.radians(directional.output['steer'])
+
+# get LINEAR speed for robot
+speed.input['perception_change'] = perception_change
+speed.input['general_perception'] = magnitude
+speed.compute()
+acc = math.radians(speed.output['acceleration'])
+    \end{lstlisting}
+
   \subsubsection{Verifica se o robô está preso}
   \subsubsection{Atualiza os valores}
 

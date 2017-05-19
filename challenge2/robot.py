@@ -122,7 +122,7 @@ class robot:
         self.last_position = self.position
         self.position[0] = self.position[0] + (wheel_delta[0] + wheel_delta[1]) / 2 * math.cos(self.orientation[2] + delta_orientation / 2)
         self.position[1] = self.position[1] + (wheel_delta[0] + wheel_delta[1]) / 2 * math.sin(self.orientation[2] + delta_orientation / 2)
-        print(self.position[0:2], self.true_position[0:2])
+        # print(self.position[0:2], self.true_position[0:2])
 
         self.last_orientation = self.orientation
         self.orientation[2] = self.orientation[2] + delta_orientation

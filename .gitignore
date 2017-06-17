@@ -31,3 +31,8 @@ __pycache__
 
 # VS Code files
 .vscode/
+
+p2/
+*.aux
+*.log
+*.pdf

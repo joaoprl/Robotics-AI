@@ -11,7 +11,7 @@ class Simulator(object):
         self.port = port
 
     def connect(self):
-        self.id = vrep.simxStart(self.ip, self.port, True, True, 2000, 5)
+        self.id = vrep.simxStart(self.ip, self.port, True, False, 2000, 5)
         vrep.simxSynchronous(self.id, True)
 
         if self.id == ERROR:
@@ -25,15 +25,21 @@ class Simulator(object):
 
     def pause(self):
         if self.id is not ERROR:
-            vrep.simxPauseCommunication(self.id, 0)
+            vrep.simxPauseCommunication(self.id, True)
 
     def resume(self):
         if self.id is not ERROR:
-            vrep.simxPauseCommunication(self.id, 1)
+            vrep.simxPauseCommunication(self.id, False)
 
     def update(self):
         if self.id is not ERROR:
             vrep.simxSynchronousTrigger(self.id)
+
+    def execute_script(self, object_name, function_name):
+        if self.id is not ERROR:
+            _, _, _, _, _ = vrep.simxCallScriptFunction(
+                self.id, object_name, vrep.sim_scripttype_customizationscript,
+                function_name, [], [], [], bytearray(), vrep.simx_opmode_blocking)
 
     def get_handle(self, name):
         status, handle = vrep.simxGetObjectHandle(
@@ -106,7 +112,7 @@ class Simulator(object):
     def set_joint_position(self, handle, pos):
         if self.id is not ERROR:
             vrep.simxSetJointPosition(
-                self.id, handle, pos, vrep.simx_opmode_streaming)
+                self.id, handle, pos, vrep.simx_opmode_oneshot)
 
     def set_joint_target_velocity(self, handle, vel):
         if self.id is not ERROR:

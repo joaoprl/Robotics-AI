@@ -1,6 +1,10 @@
 import math
 import random
 
+# remote API script
+REMOTE_API_OBJ = 'RemoteAPI'
+REMOTE_API_FUNC = 'resetSimulation'
+
 # robot joints names
 TAIL_JOINT = "tailJoint"
 LEG_TOP_JOINT = "robbieLegJoint1"
@@ -14,7 +18,7 @@ SIDEWAYS_PENALTY = -5
 
 # action values
 JOINT_POS_LIMIT = math.pi
-ROTATION_SPEED = 1
+ROTATION_SPEED = 20
 
 # enum for actions
 class Action(object):
@@ -53,11 +57,8 @@ class Robbie(object):
         self.active_speed = [0] * len(self.active_joints)
         self.passive_pos = [0] * len(self.passive_joints)
 
-        # initial updates
-        self.sim.update()
-        self.update_pose(True)
-        self.update_sensors(True)
-        self.update()
+        # initial update
+        self.update(0, True)
 
         # save initial values to reset scene
         self.init_position = self.position
@@ -67,30 +68,26 @@ class Robbie(object):
 
     ## reset robot on the scene
     def reset_robot(self):
-        self.sim.pause()
-        self.sim.set_position(self.handle, self.init_position)
-        self.sim.set_orientation(self.handle, self.init_orientation)
-        for index, active_joint in enumerate(self.active_joints):
-            self.sim.set_joint_position(active_joint, self.init_active_pos[index])
-        for index, passive_joint in enumerate(self.passive_joints):
-            self.sim.set_joint_position(passive_joint, self.init_passive_pos[index])
+        self.sim.execute_script(REMOTE_API_OBJ, REMOTE_API_FUNC)
+        self.sim.disconnect()
+        self.sim.connect()
         self.active_speed = [0] * len(self.active_joints)
-        self.sim.resume()
+        self.update(0, True)
 
     ## main update
-    def update(self, tick_time=0):
+    def update(self, tick_time=0, first_time=False):
         self.sim.update()
-        self.update_pose()
-        self.update_sensors()
+        self.update_pose(first_time)
+        self.update_sensors(first_time)
         self.rotate_joints(tick_time)
 
     ## update pose
-    def update_pose(self, first_time=False):
+    def update_pose(self, first_time):
         self.position = self.sim.get_position(self.handle, first_time)
         self.orientation = self.sim.get_orientation(self.handle, first_time)
 
     ## update sensors
-    def update_sensors(self, first_time=False):
+    def update_sensors(self, first_time):
         self.active_pos = [self.sim.get_joint_position(i, first_time) for i in self.active_joints]
         self.passive_pos = [self.sim.get_joint_position(i, first_time) for i in self.passive_joints]
 

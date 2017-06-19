@@ -2,6 +2,7 @@ from time import time
 from robbie import Robbie, Action
 from simulator import Simulator
 
+TIMEOUT = 60
 SIMULATOR_PORT = 25000
 
 def main():
@@ -9,11 +10,15 @@ def main():
     sim = Simulator("127.0.0.1", SIMULATOR_PORT)
     sim.connect()
 
-    # get robbie instance
+    # get robbie instance and reset it
     robbie = Robbie(sim, "Robbie")
+    robbie.reset_robot()
 
     # delta time variable
     tick_time = 0
+
+    # total time of this generation
+    gen_time = 0
 
     # update loop
     while True:
@@ -28,12 +33,15 @@ def main():
         new_state, reward, done = robbie.act(actions)
         print new_state + [reward] + [done]
 
-        # reset robot if finished simulation
-        if done:
-            robbie.reset_robot()
-
         # get delta time
         tick_time = time() - start_time
+        gen_time += tick_time
+
+        # reset robot if finished simulation or timed out
+        if done or gen_time >= TIMEOUT:
+            robbie.reset_robot()
+            gen_time = 0
+            tick_time = 0
 
     # disconnect from simulator
     sim.disconnect()

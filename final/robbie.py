@@ -5,6 +5,10 @@ import random
 REMOTE_API_OBJ = 'RemoteAPI'
 REMOTE_API_FUNC = 'resetSimulation'
 
+# robot constants
+STUCK_MARGIN = 1e-2
+STUCK_TIMEOUT = 5
+
 # robot joints names
 TAIL_JOINT = "tailJoint"
 LEG_TOP_JOINT = "robbieLegJoint1"
@@ -57,6 +61,11 @@ class Robbie(object):
         self.active_speed = [0] * len(self.active_joints)
         self.passive_pos = [0] * len(self.passive_joints)
 
+        # stuck check variables
+        self.is_stuck = False
+        self.stuck_position = [0] * 3
+        self.stuck_time = 0
+
         # initial update
         self.update(0, True)
 
@@ -68,10 +77,18 @@ class Robbie(object):
 
     ## reset robot on the scene
     def reset_robot(self):
+        # reset server through script
         self.sim.execute_script(REMOTE_API_OBJ, REMOTE_API_FUNC)
         self.sim.disconnect()
         self.sim.connect()
+
+        # reset variables
         self.active_speed = [0] * len(self.active_joints)
+        self.is_stuck = False
+        self.stuck_position = [0] * 3
+        self.stuck_time = 0
+
+        # initial update
         self.update(0, True)
 
     ## main update
@@ -79,6 +96,7 @@ class Robbie(object):
         self.sim.update()
         self.update_pose(first_time)
         self.update_sensors(first_time)
+        self.check_stuck(tick_time)
         self.rotate_joints(tick_time)
 
     ## update pose
@@ -122,8 +140,21 @@ class Robbie(object):
         return reward
 
     ## check if robot didn't move for some time
-    def is_stuck(self):
-        return False
+    def check_stuck(self, tick_time):
+        is_close = True
+        for i in range(3):
+            diff_pos = abs(self.stuck_position[i] - self.position[i])
+            if diff_pos >= STUCK_MARGIN:
+                is_close = False
+                break
+        if is_close:
+            self.stuck_time += tick_time
+            print self.stuck_time
+            self.is_stuck = self.stuck_time >= STUCK_TIMEOUT
+        else:
+            self.stuck_time = 0
+            self.stuck_position = self.position
+            self.is_stuck = False
 
     ## exectute actions on robot
     def act(self, actions):
@@ -136,7 +167,7 @@ class Robbie(object):
                 self.active_speed[index] = 0
 
         # return new state
-        return self.get_state(), self.get_reward(), self.is_stuck()
+        return self.get_state(), self.get_reward(), self.is_stuck
 
     ### [debug] robot pose
     def print_pose(self):

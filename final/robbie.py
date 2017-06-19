@@ -1,3 +1,4 @@
+import math
 import random
 
 # robot joints names
@@ -12,6 +13,7 @@ FORWARD_REWARD = 1
 SIDEWAYS_PENALTY = -5
 
 # action values
+JOINT_POS_LIMIT = math.pi
 ROTATION_SPEED = 1
 
 # enum for actions
@@ -52,7 +54,9 @@ class Robbie(object):
         self.passive_pos = [0] * len(self.passive_joints)
 
         # initial updates
-        self.update()
+        self.sim.update()
+        self.update_pose(True)
+        self.update_sensors(True)
         self.update()
 
         # save initial values to reset scene
@@ -81,25 +85,27 @@ class Robbie(object):
         self.rotate_joints(tick_time)
 
     ## update pose
-    def update_pose(self):
-        self.position = self.sim.get_position(self.handle)
-        self.orientation = self.sim.get_orientation(self.handle)
+    def update_pose(self, first_time=False):
+        self.position = self.sim.get_position(self.handle, first_time)
+        self.orientation = self.sim.get_orientation(self.handle, first_time)
 
     ## update sensors
-    def update_sensors(self):
-        self.active_pos = [self.sim.get_joint_position(i) for i in self.active_joints]
-        self.passive_pos = [self.sim.get_joint_position(i) for i in self.passive_joints]
+    def update_sensors(self, first_time=False):
+        self.active_pos = [self.sim.get_joint_position(i, first_time) for i in self.active_joints]
+        self.passive_pos = [self.sim.get_joint_position(i, first_time) for i in self.passive_joints]
 
     ## rotate active joints based on speed
     def rotate_joints(self, tick_time):
         for index, active_joint in enumerate(self.active_joints):
             new_pos = self.active_pos[index] + self.active_speed[index] * tick_time
+            new_pos = max(-JOINT_POS_LIMIT, min(new_pos, JOINT_POS_LIMIT))
             self.sim.set_joint_position(active_joint, new_pos)
 
     ## return robot current state
     def get_state(self):
-        state = self.active_joints
-        state += self.passive_joints
+        state = []
+        state += self.active_pos
+        state += self.passive_pos
         state += [self.position[0]]
         state += self.orientation
         state += self.active_speed
@@ -111,10 +117,10 @@ class Robbie(object):
         reward = 0
 
         # reward for getting far
-        reward += self.position[0] * FORWARD_REWARD
+        reward += self.position[1] * FORWARD_REWARD
 
         # penalty for getting off track
-        reward += abs(self.position[1]) * SIDEWAYS_PENALTY
+        reward += abs(self.position[0]) * SIDEWAYS_PENALTY
 
         return reward
 

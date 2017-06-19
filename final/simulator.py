@@ -44,56 +44,49 @@ class Simulator(object):
 
         return handle
 
-    def init_prox_sensor(self, handle):
-        status, state, coord, _, _ = vrep.simxReadProximitySensor(
-            self.id, handle, vrep.simx_opmode_streaming)
-        if status is ERROR:
-            raise Exception('Unable to init sensor!')
-
-        return state, coord
-
-    def read_prox_sensor(self, handle):
-        status, state, coord, _, _ = vrep.simxReadProximitySensor(
-            self.id, handle, vrep.simx_opmode_buffer)
+    def read_prox_sensor(self, handle, first_call=False):
+        opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
+        status, state, coord, _, _ = vrep.simxReadProximitySensor(self.id, handle, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')
 
         return state, coord
 
-    def get_position(self, handle):
+    def get_position(self, handle, first_call=False):
+        opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
         # return absolute position
-        status, pos = vrep.simxGetObjectPosition(
-            self.id, handle, -1, vrep.simx_opmode_streaming)
+        status, pos = vrep.simxGetObjectPosition(self.id, handle, -1, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')
 
         return pos
 
-    def get_orientation(self, handle):
+    def get_orientation(self, handle, first_call=False):
+        opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
         # return absolute position
         status, pos = vrep.simxGetObjectOrientation(
-            self.id, handle, -1, vrep.simx_opmode_streaming)
+            self.id, handle, -1, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')
 
         return pos
 
-    def get_velocity(self, handle):
+    def get_velocity(self, handle, first_call=False):
+        opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
         # return linear and angular velocity
-        status, linear, angular = vrep.simxGetObjectVelocity(
-            self.id, handle, vrep.simx_opmode_streaming)
+        status, linear, angular = vrep.simxGetObjectVelocity(self.id, handle, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')
 
         return linear, angular
 
-    def get_joint_position(self, handle):
-        status, pos = vrep.simxGetJointPosition(
-            self.id, handle, vrep.simx_opmode_streaming)
+    def get_joint_position(self, handle, first_call=False):
+        opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
+        status, pos = vrep.simxGetJointPosition(self.id, handle, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')

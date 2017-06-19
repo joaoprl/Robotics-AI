@@ -7,7 +7,7 @@ REMOTE_API_FUNC = 'resetSimulation'
 
 # robot constants
 STUCK_MARGIN = 1e-2
-STUCK_TIMEOUT = 5
+STUCK_TIMEOUT = 6
 
 # robot joints names
 TAIL_JOINT = "tailJoint"
@@ -149,7 +149,6 @@ class Robbie(object):
                 break
         if is_close:
             self.stuck_time += tick_time
-            print self.stuck_time
             self.is_stuck = self.stuck_time >= STUCK_TIMEOUT
         else:
             self.stuck_time = 0

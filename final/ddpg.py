@@ -44,10 +44,10 @@ class ddpg:
 
     def train(self, max_episodes, max_steps, buffer_size):
         # initialize actor and critic networks
-        actor = actor_network(self.action_dim, self.state_dim, self.batch_size,
+        actor = actor_network(self.state_dim, self.action_dim, self.batch_size,
                     self.tau, self.lra)
 
-        critic = critic_network(self.action_dim, self.state_dim, self.batch_size,
+        critic = critic_network(self.state_dim, self.action_dim, self.batch_size,
                     self.tau, self.lrc)
 
         # initialize replay buffer R

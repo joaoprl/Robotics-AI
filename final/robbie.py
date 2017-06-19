@@ -18,7 +18,7 @@ SIDEWAYS_PENALTY = -5
 
 # action values
 JOINT_POS_LIMIT = math.pi
-ROTATION_SPEED = 20
+ROTATION_SPEED = math.pi
 
 # enum for actions
 class Action(object):

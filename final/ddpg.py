@@ -109,7 +109,7 @@ class ddpg:
                 a_t = a_t_raw + noise_t
 
                 ## execute action and observe our new reward+state
-                new_s_t, r_t, done = self.robot.act(a_t)
+                new_s_t, r_t, done = self.robot.act(a_t[0])
                 new_s_t = self.bake(new_s_t)
 
                 ## store transition at our buffer
@@ -176,7 +176,7 @@ class ddpg:
                 a_t = actor.helper.predict(s_t)
 
                 ## execute action and observe our new reward+state
-                new_s_t, r_t, done = self.robot.act(a_t)
+                new_s_t, r_t, done = self.robot.act(a_t[0])
 
                 s_t = new_s_t
                 total_reward += r_t

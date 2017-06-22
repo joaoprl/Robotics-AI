@@ -52,7 +52,7 @@ class critic_network:
             print 'Uh oh! Couldn\'t load weights for critic network.'
 
     ## save our weights
-    def load_weights(self, path):
+    def save_weights(self, path):
         self.helper.save_weights(path+"/critic.h5", overwrite=True)
 
         print 'Saving weights for critic network.'
@@ -66,7 +66,7 @@ class critic_network:
 
     ##   apply training on our target network, to slowly converge with our
     ##  critic network
-    def target_train():
+    def target_train(self):
         weights = self.helper.get_weights()
         target_weights = self.target.get_weights()
 

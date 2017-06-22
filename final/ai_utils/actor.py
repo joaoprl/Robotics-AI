@@ -62,16 +62,16 @@ class actor_network:
 
         print 'Saving weights for actor network.'
 
-    ## get our gradients for policy update
-    def gradients(self, states, grads):
-        return self.sess.run(self.action_gradients, feed_dict={
+    ## train our actor according to a critic
+    def train(self, states, grads):
+        return self.sess.run(self.optimize, feed_dict={
             self.state: states,
             self.action_gradients: grads
-        })[0]
+        })
 
     ##   apply training on our target network, to slowly converge with our
     ##  actor network
-    def target_train():
+    def target_train(self):
         weights = self.helper.get_weights()
         target_weights = self.target.get_weights()
 

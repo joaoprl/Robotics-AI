@@ -6,5 +6,5 @@ import random
 import numpy as np
 
 class ou:
-    def noise(self, x, mu=0., theta=.15, sigma=.2):
+    def apply(self, x, mu=0., theta=.15, sigma=.2):
         return theta * (mu - x) + sigma * np.random.randn(1)

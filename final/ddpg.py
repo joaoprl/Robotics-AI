@@ -4,13 +4,16 @@
 ###
 ### [1] https://arxiv.org/pdf/1509.02971.pdf
 
-from ai_utils import noise, actor.actor_network, critic.critic_network
+from ai_utils import noise
+from actor import actor_network
+from critic import critic_network
 
-## TODO: -> implement networks
-##       -> implement noise class
-##       -> save and restore weights from previous training
+from keras import backend as K
+import tensorflow as tf
+
+## TODO: -> debug main algorithm (networks should be good)
 ##       
-##       -> implement new robot environment
+##       -> integrate with robot environment
 
 class ddpg:
     ##
@@ -29,7 +32,11 @@ class ddpg:
     ##  -> lrc:     learning rate for CRITIC
     ##
     def __init__(self, action_dim, state_dim, batch_size=32, 
-        wd=.01, gamma=.99, tau=.001, lra=.0001, lrc=.001):
+        wd=.01, gamma=.99, tau=.001, lra=.0001, lrc=.001, path='./aidata/'):
+
+        self.path = path
+        self.noise = noise.ou()
+
         self.batch_size = batch_size
 
         self.wd = wd
@@ -42,13 +49,28 @@ class ddpg:
         self.action_dim = action_dim
         self.state_dim = state_dim
 
+        # gpu usage
+        # config = tf.ConfigProto()
+        # config.gpu_options.allow_growth = True
+
+        self.sess = tf.Session() # config=config
+        K.set_session(self.sess)
+
+    def load_weights(self, actor, critic):
+        actor.load_weights(self.path)
+        critic.load_weights(self.path)
+
+    ## train our ddpg model
     def train(self, max_episodes, max_steps, buffer_size):
         # initialize actor and critic networks
-        actor = actor_network(self.state_dim, self.action_dim, self.batch_size,
-                    self.tau, self.lra)
+        actor = actor_network(self.sess, self.state_dim, self.action_dim, 
+            self.batch_size, self.tau, self.lra)
 
-        critic = critic_network(self.state_dim, self.action_dim, self.batch_size,
-                    self.tau, self.lrc)
+        critic = critic_network(self.sess, self.state_dim, self.action_dim, 
+            self.batch_size, self.tau, self.lrc)
+
+        # load weights
+        load_weights(actor, critic)
 
         # initialize replay buffer R
         buff = replay_buffer(buffer_size)
@@ -76,7 +98,7 @@ class ddpg:
 
                 # apply exploration noise
                 epsilon = max(epsilon-explore_decay, 0)
-                noise_t = epsilon*noise.ou(a_t_raw)
+                noise_t = epsilon*self.noise(a_t_raw)
 
                 a_t = a_t_raw + noise_t
 
@@ -115,7 +137,44 @@ class ddpg:
                 if done:
                     break
 
-        ## finish up
+            if episode % 5 is 0:
+                self.actor.save_weights()
+                self.critic.save_weights()
 
-    def run():
+            print 'EPISODE: ' + episode
+            print '\tTOTAL REWARD: ' + total_reward
 
+    ## run our ddpg model
+    def tick(self):
+        # initialize actor and critic networks
+        actor = actor_network(self.sess, self.state_dim, self.action_dim)
+        critic = critic_network(self.sess, self.state_dim, self.action_dim)
+
+        # load weights
+        load_weights(actor, critic)
+
+        for episode in range(max_episodes):
+            ## initialize a random process for action exploration from our 
+            ## VREP environment
+            # self.simulator.restart()
+
+            ## get initial state from our VREP environment
+            # s_t = np.hstack(self.robot.get_state())
+
+            total_reward = 0.
+            for t in range(max_steps):
+                ## select action according to our current policy
+                a_t = actor.helper.predict(s_t)
+
+                ## execute action and observe our new reward+state
+                # new_s_t, r_t, done = self.robot.act(a_t)
+
+                s_t = new_s_t
+                total_reward += r_t
+
+                ## did we end our episode?
+                if done:
+                    break
+
+            print 'EPISODE: ' + episode
+            print '\tTOTAL REWARD: ' + total_reward

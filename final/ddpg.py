@@ -154,7 +154,7 @@ class ddpg:
             print '*********************************************'
 
     ## run our ddpg model
-    def tick(self, max_episodes, max_steps):
+    def run(self, max_episodes, max_steps):
         # initialize actor and critic networks
         actor = actor_network(self.sess, self.state_dim, self.action_dim)
         critic = critic_network(self.sess, self.state_dim, self.action_dim)

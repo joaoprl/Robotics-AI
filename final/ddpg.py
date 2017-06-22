@@ -110,6 +110,7 @@ class ddpg:
 
                 ## execute action and observe our new reward+state
                 new_s_t, r_t, done = self.robot.act(a_t)
+                new_s_t = self.bake(new_s_t)
 
                 ## store transition at our buffer
                 buff.store(s_t, a_t, r_t, new_s_t, done)
@@ -208,8 +209,7 @@ class robot:
 
     def act(self, actions):
         print '\t\t-> Actions to be executed: ' + str(actions)
-
-        return np.ones((1, self.s)), 1, False
+        return [1]*self.s, 1, False
 
 if __name__ == "__main__":
     r = robot(25, 8)

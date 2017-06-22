@@ -176,7 +176,7 @@ class ddpg:
                 ## execute action and observe our new reward+state
                 new_s_t, r_t, done = self.robot.act(a_t[0])
 
-                s_t = new_s_t
+                s_t = self.bake(new_s_t)
                 total_reward += r_t
 
                 ## did we end our episode?

@@ -1,11 +1,12 @@
+import random
 from time import time
-from robbie import Robbie, Action
+from robbie import Robbie
 from simulator import Simulator
 
 TIMEOUT = 60
 SIMULATOR_PORT = 25000
 
-def main():
+def test_robot():
     # connect to vrep simulator
     sim = Simulator("127.0.0.1", SIMULATOR_PORT)
     sim.connect()
@@ -29,7 +30,7 @@ def main():
         robbie.update(tick_time)
 
         # send actions to robot
-        actions = [Action.get_random_action() for _ in range(8)]
+        actions = [random.randrange(-1, 1) for _ in range(8)]
         new_state, reward, done = robbie.act(actions)
         print new_state + [reward] + [done]
 
@@ -47,4 +48,4 @@ def main():
     sim.disconnect()
 
 if __name__ == "__main__":
-    main()
+    test_robot()

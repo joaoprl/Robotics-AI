@@ -12,9 +12,7 @@ from keras import backend as K
 import tensorflow as tf
 import numpy as np
 
-## TODO: -> receive simulator to apply operations at environment
-##       
-##       -> integrate with robot environment
+## TODO: -> integrate with robot environment
 
 class ddpg:
     ##
@@ -89,7 +87,7 @@ class ddpg:
         for episode in range(max_episodes):
             ## initialize a random process for action exploration from our 
             ## VREP environment
-            # self.simulator.restart()
+            self.robot.reset_robot()
 
             ## get initial state from our VREP environment
             s_t = self.bake(self.robot.get_state())
@@ -165,7 +163,7 @@ class ddpg:
         for episode in range(max_episodes):
             ## initialize a random process for action exploration from our 
             ## VREP environment
-            # self.simulator.restart()
+            self.robot.reset_robot()
 
             ## get initial state from our VREP environment
             s_t = self.bake(self.robot.get_state())
@@ -203,6 +201,9 @@ class robot:
     def __init__(self, s_dim, a_dim):
         self.s = s_dim
         self.a = a_dim
+       
+    def reset_robot(self):
+        return
 
     def get_state(self):
         return [1]*25

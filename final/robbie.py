@@ -1,5 +1,4 @@
 import math
-import random
 
 # remote API script
 REMOTE_API_OBJ = 'RemoteAPI'
@@ -20,20 +19,13 @@ LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 FORWARD_REWARD = 1
 SIDEWAYS_PENALTY = -5
 
+# state and action contants
+STATES_DIM = 8
+ACTIONS_DIM = 25
+
 # action values
 JOINT_POS_LIMIT = math.pi
 ROTATION_SPEED = math.pi
-
-# enum for actions
-class Action(object):
-    cc_rotation = 1
-    cw_rotation = 2
-    no_rotation = 3
-
-    @staticmethod
-    def get_random_action():
-        options = [Action.cc_rotation, Action.cw_rotation, Action.no_rotation]
-        return random.choice(options)
 
 class Robbie(object):
     def __init__(self, sim, name):
@@ -119,12 +111,12 @@ class Robbie(object):
     ## return robot current state
     def get_state(self):
         state = []
-        state += self.active_pos
-        state += self.passive_pos
-        state += [self.position[0]]
-        state += self.orientation
-        state += self.active_speed
-        return state
+        state += self.active_pos    # 8 states (active joints position)
+        state += self.passive_pos   # 5 states (passive joints position)
+        state += [self.position[0]] # 1 state  (robot y position)
+        state += self.orientation   # 3 states (robot orientation)
+        state += self.active_speed  # 8 states (active joints speed)
+        return state                # total: 25 states
 
     ## return current state reward
     def get_reward(self):
@@ -158,15 +150,15 @@ class Robbie(object):
     ## exectute actions on robot
     def act(self, actions):
         for index, action in enumerate(actions):
-            if action == Action.cc_rotation:
-                self.active_speed[index] = ROTATION_SPEED
-            elif action == Action.cw_rotation:
-                self.active_speed[index] = -ROTATION_SPEED
-            elif action == Action.no_rotation:
-                self.active_speed[index] = 0
+            self.active_speed[index] = action * ROTATION_SPEED
 
         # return new state
         return self.get_state(), self.get_reward(), self.is_stuck
+
+    @staticmethod
+    ## return states and actions dimensions
+    def get_dimensions():
+        return STATES_DIM, ACTIONS_DIM
 
     ### [debug] robot pose
     def print_pose(self):

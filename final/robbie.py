@@ -93,7 +93,6 @@ class Robbie(object):
         now_tick = time()
         tick_time = 0 if first_time else now_tick - self.last_tick
         self.last_tick = now_tick
-        print(tick_time)
 
         # update joint positions
         self.rotate_joints(tick_time)

@@ -140,6 +140,7 @@ class ddpg:
 
                 ## did we end our episode?
                 if done:
+                    print 'Robot was stuck. Resetting scene.'
                     break
 
             if episode % 5 is 0:
@@ -181,6 +182,7 @@ class ddpg:
 
                 ## did we end our episode?
                 if done:
+                    print 'Robot was stuck. Resetting scene.'
                     break
 
             print '*********************************************'

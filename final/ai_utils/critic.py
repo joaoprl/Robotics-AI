@@ -1,5 +1,5 @@
 ##
-## implementation of the CRITIC network, 
+## implementation of the CRITIC network,
 ## along with target optimization
 ##
 
@@ -15,7 +15,7 @@ H_LAYER1 = 300
 H_LAYER2 = 400
 
 class critic_network:
-    def __init__(self, sess, state_dim, action_dim, batch_size=32, tau=.001, 
+    def __init__(self, sess, state_dim, action_dim, batch_size=32, tau=.001,
         lr=.001):
         self.sess = sess
 
@@ -38,7 +38,7 @@ class critic_network:
         # set things up
         self.sess.run(tf.global_variables_initializer())
 
-        print '~*~*~>critic network created!'
+        print('~*~*~>critic network created!')
         self.target.summary()
 
     ## load our weights
@@ -47,15 +47,15 @@ class critic_network:
             self.helper.load_weights(path+"/critic.h5")
             self.target.load_weights(path+"/critic.h5")
 
-            print 'Loading weights for critic network.'
+            print('Loading weights for critic network.')
         except:
-            print 'Uh oh! Couldn\'t load weights for critic network.'
+            print('Uh oh! Couldn\'t load weights for critic network.')
 
     ## save our weights
     def save_weights(self, path):
         self.helper.save_weights(path+"/critic.h5", overwrite=True)
 
-        print 'Saving weights for critic network.'
+        print('Saving weights for critic network.')
 
     ## get our gradients for policy update
     def gradients(self, states, actions):
@@ -83,7 +83,7 @@ class critic_network:
         h1 = Dense(H_LAYER2, activation='linear')(w)
 
         A = Input(shape=[self.action_dim], name='action2')
-        a = Dense(H_LAYER2, activation='linear')(A) 
+        a = Dense(H_LAYER2, activation='linear')(A)
 
         h2 = add([h1, a])
         h3 = Dense(H_LAYER2, activation='relu')(h2)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-### Implementation of the DDPG algorithm [1]. 
+### Implementation of the DDPG algorithm [1].
 ###
 ### [1] https://arxiv.org/pdf/1509.02971.pdf
 
@@ -30,8 +30,8 @@ class ddpg:
     ##  -> lra:     learning rate for ACTOR
     ##  -> lrc:     learning rate for CRITIC
     ##
-    def __init__(self, robot, state_dim, action_dim, 
-        batch_size=32, wd=.01, gamma=.99, tau=.001, lra=.0001, lrc=.001, 
+    def __init__(self, robot, state_dim, action_dim,
+        batch_size=32, wd=.01, gamma=.99, tau=.001, lra=.0001, lrc=.001,
         path='./aidata/'):
 
         self.robot = robot
@@ -68,10 +68,10 @@ class ddpg:
     ## train our ddpg model
     def train(self, max_episodes, max_steps, buffer_size=1000000):
         # initialize actor and critic networks
-        actor = actor_network(self.sess, self.state_dim, self.action_dim, 
+        actor = actor_network(self.sess, self.state_dim, self.action_dim,
             self.batch_size, self.tau, self.lra)
 
-        critic = critic_network(self.sess, self.state_dim, self.action_dim, 
+        critic = critic_network(self.sess, self.state_dim, self.action_dim,
             self.batch_size, self.tau, self.lrc)
 
         # load weights
@@ -85,7 +85,7 @@ class ddpg:
         explore_decay = 1.0/100000.
 
         for episode in range(max_episodes):
-            ## initialize a random process for action exploration from our 
+            ## initialize a random process for action exploration from our
             ## VREP environment
             self.robot.reset_robot()
 
@@ -146,10 +146,10 @@ class ddpg:
                 actor.save_weights(self.path)
                 critic.save_weights(self.path)
 
-            print '*********************************************'
-            print 'EPISODE: ' + str(episode)
-            print '\tTOTAL REWARD: ' + str(total_reward)
-            print '*********************************************'
+            print('*********************************************')
+            print('EPISODE: ' + str(episode))
+            print('\tTOTAL REWARD: ' + str(total_reward))
+            print('*********************************************')
 
     ## run our ddpg model
     def run(self, max_episodes, max_steps):
@@ -161,7 +161,7 @@ class ddpg:
         self.load_weights(actor, critic)
 
         for episode in range(max_episodes):
-            ## initialize a random process for action exploration from our 
+            ## initialize a random process for action exploration from our
             ## VREP environment
             self.robot.reset_robot()
 
@@ -183,10 +183,10 @@ class ddpg:
                 if done:
                     break
 
-            print '*********************************************'
-            print '\tEPISODE: ' + str(episode)
-            print '\tTOTAL REWARD: ' + str(total_reward)
-            print '*********************************************'
+            print('*********************************************')
+            print('\tEPISODE: ' + str(episode))
+            print('\tTOTAL REWARD: ' + str(total_reward))
+            print('*********************************************')
 
     ##########
     ## helpers
@@ -201,7 +201,7 @@ class robot:
     def __init__(self, s_dim, a_dim):
         self.s = s_dim
         self.a = a_dim
-       
+
     def reset_robot(self):
         return
 
@@ -209,7 +209,7 @@ class robot:
         return [1]*25
 
     def act(self, actions):
-        print '\t\t-> Actions to be executed: ' + str(actions)
+        print('\t\t-> Actions to be executed: ' + str(actions))
         return [1]*self.s, 1, False
 
 if __name__ == "__main__":

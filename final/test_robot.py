@@ -32,7 +32,7 @@ def test_robot():
         # send actions to robot
         actions = [random.randrange(-1, 1) for _ in range(8)]
         new_state, reward, done = robbie.act(actions)
-        print new_state + [reward] + [done]
+        print(new_state + [reward] + [done])
 
         # get delta time
         tick_time = time() - start_time

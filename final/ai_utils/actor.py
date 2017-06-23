@@ -1,5 +1,5 @@
 ##
-## implementation of the ACTOR network, 
+## implementation of the ACTOR network,
 ## along with target optimization
 ##
 
@@ -14,7 +14,7 @@ H_LAYER1 = 300
 H_LAYER2 = 400
 
 class actor_network:
-    def __init__(self, sess, state_dim, action_dim, batch_size=32, tau=.001, 
+    def __init__(self, sess, state_dim, action_dim, batch_size=32, tau=.001,
         lr=.001):
         self.sess = sess
 
@@ -33,7 +33,7 @@ class actor_network:
 
         # policy update gradients
         self.action_gradients = tf.placeholder(tf.float32, [None, self.action_dim])
-        self.params_grad = tf.gradients(self.helper.output, self.weights, 
+        self.params_grad = tf.gradients(self.helper.output, self.weights,
             -self.action_gradients)
 
         grads = zip(self.params_grad, self.weights)
@@ -43,7 +43,7 @@ class actor_network:
         # set things up
         self.sess.run(tf.global_variables_initializer())
 
-        print '~*~*~>actor network created!'
+        print('~*~*~>actor network created!')
         self.target.summary()
 
     ## load our weights
@@ -52,15 +52,15 @@ class actor_network:
             self.helper.load_weights(path+"/actor.h5")
             self.target.load_weights(path+"/actor.h5")
 
-            print 'Loading weights for actor network.'
+            print('Loading weights for actor network.')
         except:
-            print 'Uh oh! Couldn\'t load weights for actor network.'
+            print('Uh oh! Couldn\'t load weights for actor network.')
 
     ## save our weights
     def save_weights(self, path):
         self.helper.save_weights(path+"/actor.h5", overwrite=True)
 
-        print 'Saving weights for actor network.'
+        print('Saving weights for actor network.')
 
     ## train our actor according to a critic
     def train(self, states, grads):

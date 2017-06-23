@@ -162,8 +162,8 @@ class Robbie(object):
 
     ### [debug] robot pose
     def print_pose(self):
-        print self.position + self.orientation
+        print(self.position + self.orientation)
 
     ### [debug] robot state
     def print_state(self):
-        print self.get_state()
+        print(self.get_state())

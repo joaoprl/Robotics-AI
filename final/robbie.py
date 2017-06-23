@@ -1,4 +1,5 @@
 import math
+from time import time
 
 # remote API script
 REMOTE_API_OBJ = 'RemoteAPI'
@@ -33,6 +34,9 @@ class Robbie(object):
         self.name = name                        # robot's name
         self.handle = self.sim.get_handle(name) # robot's id handle
 
+        # last tick time
+        self.last_tick = time()
+
         # id handles
         self.active_joints = []
         self.passive_joints = []
@@ -59,7 +63,7 @@ class Robbie(object):
         self.stuck_time = 0
 
         # initial update
-        self.update(0, True)
+        self.update(True)
 
         # save initial values to reset scene
         self.init_position = self.position
@@ -81,15 +85,24 @@ class Robbie(object):
         self.stuck_time = 0
 
         # initial update
-        self.update(0, True)
+        self.update(True)
 
     ## main update
-    def update(self, tick_time=0, first_time=False):
+    def update(self, first_time=False):
+        # get tick delta time
+        now_tick = time()
+        tick_time = 0 if first_time else now_tick - self.last_tick
+        self.last_tick = now_tick
+        print(tick_time)
+
+        # update joint positions
+        self.rotate_joints(tick_time)
+
+        # update simulator after rotations
         self.sim.update()
         self.update_pose(first_time)
         self.update_sensors(first_time)
         self.check_stuck(tick_time)
-        self.rotate_joints(tick_time)
 
     ## update pose
     def update_pose(self, first_time):
@@ -149,8 +162,12 @@ class Robbie(object):
 
     ## exectute actions on robot
     def act(self, actions):
+        # perform actions
         for index, action in enumerate(actions):
             self.active_speed[index] = action * ROTATION_SPEED
+
+        # update robot on simulator
+        self.update()
 
         # return new state
         return self.get_state(), self.get_reward(), self.is_stuck

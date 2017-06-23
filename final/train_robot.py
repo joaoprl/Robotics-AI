@@ -7,7 +7,7 @@ SIMULATOR_PORT = 25000
 
 # training constants
 MAX_EPISODES = 10
-MAX_STEPS = 10
+MAX_STEPS = 10000
 
 def train_robot():
     # connect to vrep simulator
@@ -26,7 +26,7 @@ def train_robot():
     robbie_ai.train(MAX_EPISODES, MAX_STEPS)
 
     # run robot one time after training
-    robbie_ai.run(1, 1)
+    robbie_ai.run(1, MAX_STEPS)
 
     # disconnect from simulator
     sim.disconnect()

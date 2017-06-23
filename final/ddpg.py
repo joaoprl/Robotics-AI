@@ -215,4 +215,4 @@ class robot:
 if __name__ == "__main__":
     r = robot(25, 8)
     ai = ddpg(r, 25, 8)
-    ai.train(10, 10)
+    ai.run(10, 10)

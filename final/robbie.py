@@ -20,8 +20,8 @@ FORWARD_REWARD = 1
 SIDEWAYS_PENALTY = -5
 
 # state and action contants
-STATES_DIM = 8
-ACTIONS_DIM = 25
+STATES_DIM = 25
+ACTIONS_DIM = 8
 
 # action values
 JOINT_POS_LIMIT = math.pi

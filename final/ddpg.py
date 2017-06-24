@@ -11,6 +11,7 @@ from ai_utils.critic import critic_network
 from keras import backend as K
 import tensorflow as tf
 import numpy as np
+import sys
 
 ## TODO: -> integrate with robot environment
 
@@ -93,6 +94,7 @@ class ddpg:
             s_t = self.bake(self.robot.get_state())
 
             total_reward = 0.
+            accLoss = .0
             for t in range(max_steps):
                 ## select action according to our current policy
                 a_t = np.zeros(self.action_dim)
@@ -124,6 +126,7 @@ class ddpg:
 
                 ## update critics by minimizing loss
                 loss = critic.helper.train_on_batch([states, actions], y_t)
+                accLoss += loss
 
                 ## update actor policy using the sampled policy gradient
                 gradient_actions = actor.helper.predict(states)
@@ -151,6 +154,8 @@ class ddpg:
             print('EPISODE: ' + str(episode))
             print('\tTOTAL REWARD: ' + str(total_reward))
             print('*********************************************')
+            print(str(episode) + ", " + str(total_reward) + ", " + str(accLoss / max_steps), file=sys.stderr)
+            sys.stdout.flush()
 
     ## run our ddpg model
     def run(self, max_episodes, max_steps):

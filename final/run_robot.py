@@ -6,8 +6,8 @@ from simulator import Simulator
 SIMULATOR_PORT = 25000
 
 # training constants
-MAX_EPISODES = 10
-MAX_STEPS = 10000
+MAX_EPISODES = 1
+MAX_STEPS = 200
 
 def run_robot():
     # connect to vrep simulator

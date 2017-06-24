@@ -26,7 +26,7 @@ ACTIONS_DIM = 8
 
 # action values
 JOINT_POS_LIMIT = math.pi
-ROTATION_SPEED = math.pi
+ROTATION_SPEED = math.pi * 5
 
 class Robbie(object):
     def __init__(self, sim, name):

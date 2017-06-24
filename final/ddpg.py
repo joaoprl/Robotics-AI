@@ -84,6 +84,8 @@ class ddpg:
         epsilon = 1
         explore_decay = 1.0/100000.
 
+        avg_loss = 0.
+
         for episode in range(max_episodes):
             ## initialize a random process for action exploration from our
             ## VREP environment
@@ -120,10 +122,11 @@ class ddpg:
                 target_q_values = critic.target.predict([new_states, \
                     actor.target.predict(new_states)])
 
-                y_t = r_t + dones*self.gamma*target_q_values
+                y_t = rewards + self.gamma*target_q_values
 
                 ## update critics by minimizing loss
                 loss = critic.helper.train_on_batch([states, actions], y_t)
+                avg_loss += loss
 
                 ## update actor policy using the sampled policy gradient
                 gradient_actions = actor.helper.predict(states)
@@ -146,6 +149,8 @@ class ddpg:
             if episode % 5 is 0:
                 actor.save_weights(self.path)
                 critic.save_weights(self.path)
+
+                print('\t-> average loss is: ' + str(avg_loss/max_steps))
 
             print('*********************************************')
             print('EPISODE: ' + str(episode))

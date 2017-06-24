@@ -6,7 +6,7 @@ from simulator import Simulator
 SIMULATOR_PORT = 25000
 
 # training constants
-MAX_EPISODES = 10
+MAX_EPISODES = 1000000
 MAX_STEPS = 100
 
 def train_robot():

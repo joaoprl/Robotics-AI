@@ -59,21 +59,22 @@ class Simulator(object):
 
         return state, coord
 
-    def get_position(self, handle, first_call=False):
+    def get_position(self, handle, first_call=False, relative_to_parent=False):
         opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
+        relative = vrep.sim_handle_parent if relative_to_parent else -1
         # return absolute position
-        status, pos = vrep.simxGetObjectPosition(self.id, handle, -1, opmode)
+        status, pos = vrep.simxGetObjectPosition(self.id, handle, relative, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')
 
         return pos
 
-    def get_orientation(self, handle, first_call=False):
+    def get_orientation(self, handle, first_call=False, relative_to_parent=False):
         opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
+        relative = vrep.sim_handle_parent if relative_to_parent else -1
         # return absolute position
-        status, pos = vrep.simxGetObjectOrientation(
-            self.id, handle, -1, opmode)
+        status, pos = vrep.simxGetObjectOrientation(self.id, handle, relative, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')

@@ -158,13 +158,14 @@ class Robbie(object):
         diff_angle_deg = abs(diff_angle) * 180 / math.pi
 
         # calculate direction
-        distance = math.sqrt(math.pow(diff_position[0], 2) + math.pow(diff_position[1], 2))
         last_angle = self.last_orientation[2]
-        angle_vector = [math.cos(last_angle), math.sin(last_angle), 0]
-        dot_product = angle_vector[0] * self.position[0] + angle_vector[1] * self.position[1]
-        cos_angle = dot_product / distance
-        relative_position = [self.position[0] * cos_angle, self.position[1] * cos_angle, self.position[2]]
-        direction = math.copysign(1, relative_position[1])
+        angle_vector = [-math.sin(last_angle), math.cos(last_angle), 0]
+        dot_product = angle_vector[0] * diff_position[0] + angle_vector[1] * diff_position[1]
+        # cos_angle = dot_product / distance
+        # sin_angle =math.sqrt(1 - math.pow(cos_angle, 2))
+        # relative_position = [diff_position[0] * cos_angle, diff_position[1] * sin_angle, diff_position[2]]
+        # direction = math.copysign(1, relative_position[1])
+        direction = math.copysign(1, dot_product)
 
         # reward for getting far or penalty for going backwards
         if direction == 1:

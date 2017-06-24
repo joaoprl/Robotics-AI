@@ -24,7 +24,7 @@ BACKWARDS_PENALTY = -50
 ROTATION_PENALTY = -1
 
 # state and action contants
-STATES_DIM = 25
+STATES_DIM = 24
 ACTIONS_DIM = 8
 
 # action values
@@ -132,10 +132,10 @@ class Robbie(object):
         state = []
         state += self.active_pos    # 8 states (active joints position)
         state += self.passive_pos   # 5 states (passive joints position)
-        state += [self.position[0]] # 1 state  (robot y position)
+        #state += [self.position[0]] # 1 state  (robot y position)
         state += self.orientation   # 3 states (robot orientation)
         state += self.active_speed  # 8 states (active joints speed)
-        return state                # total: 25 states
+        return state                # total: 24 states
 
     ## return current state reward
     def get_reward(self):

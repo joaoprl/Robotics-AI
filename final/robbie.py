@@ -1,3 +1,4 @@
+import copy
 import math
 from time import time
 
@@ -7,7 +8,7 @@ REMOTE_API_FUNC = 'resetSimulation'
 
 # robot constants
 STUCK_MARGIN = 1e-2
-STUCK_TIMEOUT = 6
+STUCK_TIMEOUT = 10
 
 # robot joints names
 TAIL_JOINT = "tailJoint"
@@ -17,16 +18,17 @@ LEG_BOTTOM_JOINT = "robbieLegJoint3"
 LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
-FORWARD_REWARD = 1
-SIDEWAYS_PENALTY = -5
+FORWARD_REWARD = 10
+SIDEWAYS_PENALTY = -2
+BACKWARDS_PENALTY = -5
 
 # state and action contants
 STATES_DIM = 25
 ACTIONS_DIM = 8
 
 # action values
-JOINT_POS_LIMIT = math.pi
-ROTATION_SPEED = math.pi*10
+JOINT_POS_LIMIT = math.pi / 2
+ROTATION_SPEED = math.pi * 10
 
 class Robbie(object):
     def __init__(self, sim, name):
@@ -52,6 +54,7 @@ class Robbie(object):
 
         # declare pose, position and speed variables
         self.position = [0] * 3
+        self.last_position = [0] * 3
         self.orientation = [0] * 3
         self.active_pos = [0] * len(self.active_joints)
         self.active_speed = [0] * len(self.active_joints)
@@ -105,6 +108,7 @@ class Robbie(object):
 
     ## update pose
     def update_pose(self, first_time):
+        self.last_position = copy.copy(self.position)
         self.position = self.sim.get_position(self.handle, first_time)
         self.orientation = self.sim.get_orientation(self.handle, first_time)
 
@@ -135,11 +139,18 @@ class Robbie(object):
         # start with neutral reward
         reward = 0
 
+        # get position diff
+        diff_position = [a - b for a, b in zip(self.position, self.last_position)]
+
         # reward for getting far
-        reward += self.position[1] * FORWARD_REWARD
+        reward += diff_position[1] * FORWARD_REWARD
 
         # penalty for getting off track
-        reward += abs(self.position[0]) * SIDEWAYS_PENALTY
+        reward += abs(diff_position[0]) * SIDEWAYS_PENALTY
+
+        # penalty for rotation backwards
+        if self.is_backwards():
+            reward += BACKWARDS_PENALTY
 
         return reward
 
@@ -159,6 +170,10 @@ class Robbie(object):
             self.stuck_position = self.position
             self.is_stuck = False
 
+    ## check if robot is facing backwards
+    def is_backwards(self):
+        return abs(self.orientation[2]) < math.pi / 2
+
     ## exectute actions on robot
     def act(self, actions):
         # perform actions
@@ -168,8 +183,11 @@ class Robbie(object):
         # update robot on simulator
         self.update()
 
+        # check if should finish
+        done = self.is_stuck
+
         # return new state
-        return self.get_state(), self.get_reward(), self.is_stuck
+        return self.get_state(), self.get_reward(), done
 
     @staticmethod
     ## return states and actions dimensions

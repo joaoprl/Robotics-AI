@@ -18,9 +18,10 @@ LEG_BOTTOM_JOINT = "robbieLegJoint3"
 LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
-FORWARD_REWARD = 10
+FORWARD_REWARD = 25
 SIDEWAYS_PENALTY = -2
-BACKWARDS_PENALTY = -5
+BACKWARDS_PENALTY = -50
+ROTATION_PENALTY = -1
 
 # state and action contants
 STATES_DIM = 25
@@ -56,6 +57,7 @@ class Robbie(object):
         self.position = [0] * 3
         self.last_position = [0] * 3
         self.orientation = [0] * 3
+        self.last_orientation = [0] * 3
         self.active_pos = [0] * len(self.active_joints)
         self.active_speed = [0] * len(self.active_joints)
         self.passive_pos = [0] * len(self.passive_joints)
@@ -109,6 +111,7 @@ class Robbie(object):
     ## update pose
     def update_pose(self, first_time):
         self.last_position = copy.copy(self.position)
+        self.last_orientation = copy.copy(self.orientation)
         self.position = self.sim.get_position(self.handle, first_time)
         self.orientation = self.sim.get_orientation(self.handle, first_time)
 
@@ -139,18 +142,44 @@ class Robbie(object):
         # start with neutral reward
         reward = 0
 
-        # get position diff
+        # get position and orientation diff
         diff_position = [a - b for a, b in zip(self.position, self.last_position)]
+        diff_orientation = [a - b for a, b in zip(self.orientation, self.last_orientation)]
 
-        # reward for getting far
-        reward += diff_position[1] * FORWARD_REWARD
+        # calculate distance
+        distance = math.sqrt(math.pow(diff_position[0], 2) + math.pow(diff_position[1], 2))
+
+        # calculate diff angle
+        diff_angle = diff_orientation[2]
+        if diff_angle > math.pi:
+            diff_angle -= 2 * math.pi
+        elif diff_angle < -math.pi:
+            diff_angle += 2 * math.pi
+        diff_angle_deg = abs(diff_angle) * 180 / math.pi
+
+        # calculate direction
+        distance = math.sqrt(math.pow(diff_position[0], 2) + math.pow(diff_position[1], 2))
+        last_angle = self.last_orientation[2]
+        angle_vector = [math.cos(last_angle), math.sin(last_angle), 0]
+        dot_product = angle_vector[0] * self.position[0] + angle_vector[1] * self.position[1]
+        cos_angle = dot_product / distance
+        relative_position = [self.position[0] * cos_angle, self.position[1] * cos_angle, self.position[2]]
+        direction = math.copysign(1, relative_position[1])
+
+        # reward for getting far or penalty for going backwards
+        if direction == 1:
+            reward += distance * FORWARD_REWARD
+        else:
+            reward += distance * BACKWARDS_PENALTY
+        # reward += diff_position[1] * FORWARD_REWARD
 
         # penalty for getting off track
-        reward += abs(diff_position[0]) * SIDEWAYS_PENALTY
+        reward += diff_angle_deg * ROTATION_PENALTY
+        # reward += abs(diff_position[0]) * SIDEWAYS_PENALTY
 
         # penalty for rotation backwards
-        if self.is_backwards():
-            reward += BACKWARDS_PENALTY
+        # if self.is_backwards():
+        #     reward += BACKWARDS_PENALTY
 
         return reward
 

@@ -18,9 +18,9 @@ LEG_BOTTOM_JOINT = "robbieLegJoint3"
 LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
-FORWARD_REWARD = 25
+FORWARD_REWARD = 50
 SIDEWAYS_PENALTY = -2
-BACKWARDS_PENALTY = -50
+BACKWARDS_PENALTY = -100
 ROTATION_PENALTY = -1
 
 # state and action contants

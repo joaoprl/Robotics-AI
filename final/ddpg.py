@@ -31,7 +31,7 @@ class ddpg:
     ##  -> lrc:     learning rate for CRITIC
     ##
     def __init__(self, robot, state_dim, action_dim,
-        batch_size=32, wd=.01, gamma=.99, tau=.001, lra=.0001, lrc=.001,
+        batch_size=64, wd=.01, gamma=.99, tau=.001, lra=.0001, lrc=.001,
         path='./aidata/'):
 
         self.robot = robot
@@ -66,7 +66,7 @@ class ddpg:
     ##########
 
     ## train our ddpg model
-    def train(self, max_episodes, max_steps, buffer_size=1000000):
+    def train(self, max_episodes, max_steps, buffer_size=10000):
         # initialize actor and critic networks
         actor = actor_network(self.sess, self.state_dim, self.action_dim,
             self.batch_size, self.tau, self.lra)
@@ -78,7 +78,7 @@ class ddpg:
         self.load_weights(actor, critic)
 
         # initialize replay buffer R
-        buff = rb.replay_buffer(buffer_size, self.batch_size)
+        buff = rb.replay_buffer(self.batch_size, size=buffer_size)
 
         # helpers at training
         epsilon = 1
@@ -92,15 +92,16 @@ class ddpg:
             self.robot.reset_robot()
 
             ## get initial state from our VREP environment
-            s_t = self.bake(self.robot.get_state())
+            s_t = self.robot.get_state()
 
             total_reward = 0.
+            avg_loss = 0.
             for t in range(max_steps):
                 ## select action according to our current policy
                 a_t = np.zeros(self.action_dim)
                 noise_t = np.zeros(self.action_dim)
 
-                a_t_raw = actor.helper.predict(s_t)
+                a_t_raw = actor.helper.predict(self.bake(s_t))
 
                 # apply exploration noise
                 epsilon = max(epsilon-explore_decay, 0)
@@ -110,33 +111,41 @@ class ddpg:
 
                 ## execute action and observe our new reward+state
                 new_s_t, r_t, done = self.robot.act(a_t[0])
-                new_s_t = self.bake(new_s_t)
 
                 ## store transition at our buffer
-                buff.store(s_t, a_t, r_t, new_s_t, done)
+                buff.store(np.reshape(s_t, (self.state_dim, )), 
+                           np.reshape(a_t, (self.action_dim, )), 
+                           r_t, 
+                           np.reshape(new_s_t, (self.state_dim, )), 
+                           done)
 
-                ## sample random minibatch of transitions from buffer
-                states, actions, rewards, new_states, dones = buff.get_batch()
+                if buff.count > self.batch_size:
+                    ## sample random minibatch of transitions from buffer
+                    s_batch, a_batch, r_batch, new_s_batch, _ = buff.get_batch()
 
-                ## set y according to our choice
-                target_q_values = critic.target.predict([new_states, \
-                    actor.target.predict(new_states)])
+                    ## set y according to our choice
+                    target_q_batch = critic.target.predict([new_s_batch, \
+                        actor.target.predict(new_s_batch)])
 
-                y_t = rewards + self.gamma*target_q_values
+                    y_batch = np.reshape(r_batch, (self.batch_size, 1)) + \
+                            self.gamma*target_q_batch
 
-                ## update critics by minimizing loss
-                loss = critic.helper.train_on_batch([states, actions], y_t)
-                avg_loss += loss
+                    ## update critics by minimizing loss
+                    loss = critic.helper.train_on_batch([s_batch, a_batch], 
+                        y_batch)
 
-                ## update actor policy using the sampled policy gradient
-                gradient_actions = actor.helper.predict(states)
-                gradients = critic.gradients(states, gradient_actions)
+                    ## update actor policy using the sampled policy gradient
+                    gradient_actions = actor.helper.predict(s_batch)
+                    gradients = critic.gradients(s_batch, gradient_actions)
 
-                actor.train(states, gradients)
+                    actor.train(s_batch, gradients)
 
-                ## update target networks
-                actor.target_train()
-                critic.target_train()
+                    ## update target networks
+                    actor.target_train()
+                    critic.target_train()
+
+                    ## update loss tracking
+                    avg_loss += loss
 
                 s_t = new_s_t
                 total_reward += r_t
@@ -150,11 +159,11 @@ class ddpg:
                 actor.save_weights(self.path)
                 critic.save_weights(self.path)
 
-                print('\t-> average loss is: ' + str(avg_loss/max_steps))
 
             print('*********************************************')
             print('EPISODE: ' + str(episode))
             print('\tTOTAL REWARD: ' + str(total_reward))
+            print('\tAVERAGE LOSS: ' + str(avg_loss/max_steps))
             print('*********************************************')
 
     ## run our ddpg model

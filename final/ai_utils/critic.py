@@ -11,11 +11,11 @@ from keras.layers import Dense, Flatten, Input, Lambda, Activation, add
 from keras.models import Model
 from keras.optimizers import Adam
 
-H_LAYER1 = 300
-H_LAYER2 = 400
+H_LAYER1 = 400
+H_LAYER2 = 300
 
 class critic_network:
-    def __init__(self, sess, state_dim, action_dim, batch_size=32, tau=.001,
+    def __init__(self, sess, state_dim, action_dim, batch_size=64, tau=.001,
         lr=.001):
         self.sess = sess
 
@@ -87,7 +87,7 @@ class critic_network:
 
         h2 = add([h1, a])
         h3 = Dense(H_LAYER2, activation='relu')(h2)
-        V = Dense(self.action_dim, activation='linear')(h3)
+        V = Dense(1, activation='linear')(h3)
 
         model = Model(inputs=[S, A], outputs=V)
         model.compile(loss='mse', optimizer=Adam(lr=self.lr))

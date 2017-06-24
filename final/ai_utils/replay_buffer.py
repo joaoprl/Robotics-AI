@@ -9,18 +9,26 @@ import random
 import numpy as np
 
 class replay_buffer:
-    def __init__(self, size, batch_size):
+    def __init__(self, batch_size, seed=1337, size=10000):
         self.size = size
         self.batch_size = batch_size
 
         self.count = 0
         self.buffer = deque()
 
+        random.seed(seed)
+
     def get_batch(self):
-        sample = np.array(random.sample(self.buffer, \
+        batch = np.array(random.sample(self.buffer, \
             min(self.count, self.batch_size)))
 
-        return tuple([t[0] for t in sample.T])
+        s     = np.array([b[0] for b in batch])
+        a     = np.array([b[1] for b in batch])
+        r     = np.array([b[2] for b in batch])
+        t     = np.array([b[3] for b in batch])
+        new_s = np.array([b[4] for b in batch])
+
+        return s, a, r, t, new_s
 
     def store(self, s, a, r, new_s, done):
         exp = (s, a, r, new_s, done)

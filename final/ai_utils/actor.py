@@ -10,11 +10,11 @@ from keras.initializers import VarianceScaling
 from keras.layers import Dense, Flatten, Input, Lambda, Activation
 from keras.models import Model
 
-H_LAYER1 = 300
-H_LAYER2 = 400
+H_LAYER1 = 400
+H_LAYER2 = 300
 
 class actor_network:
-    def __init__(self, sess, state_dim, action_dim, batch_size=32, tau=.001,
+    def __init__(self, sess, state_dim, action_dim, batch_size=64, tau=.001,
         lr=.001):
         self.sess = sess
 

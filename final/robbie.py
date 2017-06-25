@@ -22,11 +22,12 @@ LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
 FORWARD_REWARD = 100 # reward for getting far
-CONTINUOUS_REWARD = 0.125 # reward for having same speed as last frame
-BACKWARDS_PENALTY = -200 # penalty for going backwards
-ROTATION_PENALTY = -2 # penalty for getting off track
-STUCK_PENALTY = -100 # penalty for getting stuck
+CONTINUOUS_REWARD = 0 # reward for having same speed as last frame
+BACKWARDS_PENALTY = -50 # penalty for going backwards
+ROTATION_PENALTY = -0.25 # penalty for getting off track
+STUCK_PENALTY = -200 # penalty for getting stuck
 FALL_PENALTY = -1000 # penalty for falling down
+STOP_PENALTY = -1 # penalty for not moving
 
 # state and action contants
 STATES_DIM = 36
@@ -35,7 +36,7 @@ ACTIONS_DIM = 8
 # action values
 MAX_SPEED = 0.5 # max speed of feet
 MIN_LIMITS = [0, -2e-2, -1e-2] # min relative position of each foot
-MAX_LIMITS = [0, 2e-2, 3e-2] # max relative position of each foot
+MAX_LIMITS = [0, 2e-2, 2e-2] # max relative position of each foot
 
 class Robbie(object):
     def __init__(self, sim, name):
@@ -82,6 +83,7 @@ class Robbie(object):
 
         # stuck and fallen check variables
         self.is_stuck = False
+        self.has_stopped = False
         self.stuck_position = [0] * 3
         self.stuck_time = 0
         self.has_fallen = False
@@ -99,6 +101,7 @@ class Robbie(object):
         # reset variables
         self.last_speed = [0] * len(self.tips_speed)
         self.is_stuck = False
+        self.has_stopped = False
         self.stuck_position = [0] * 3
         self.stuck_time = 0
 
@@ -227,6 +230,10 @@ class Robbie(object):
         if self.has_fallen:
             reward += FALL_PENALTY
 
+        # penalty for not moving
+        if self.has_stopped:
+            reward += STOP_PENALTY
+
         return reward
 
     ## check if robot didn't move for some time
@@ -239,10 +246,12 @@ class Robbie(object):
                 break
         if is_close:
             self.stuck_time += tick_time
+            self.has_stopped = True
             self.is_stuck = self.stuck_time >= STUCK_TIMEOUT
         else:
             self.stuck_time = 0
             self.stuck_position = self.position
+            self.has_stopped = False
             self.is_stuck = False
 
     ## check if robot has fallen

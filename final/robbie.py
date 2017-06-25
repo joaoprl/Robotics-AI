@@ -9,28 +9,33 @@ REMOTE_API_FUNC = 'resetSimulation'
 # robot constants
 STUCK_MARGIN = 1e-2
 STUCK_TIMEOUT = 10
+FALL_HEIGHT = 6e-2
 
 # robot joints names
 TAIL_JOINT = "tailJoint"
 LEG_TOP_JOINT = "robbieLegJoint1"
 LEG_MIDDLE_JOINT = "robbieLegJoint2"
 LEG_BOTTOM_JOINT = "robbieLegJoint3"
+FOOT_TIP = "robbieFootTip"
+FOOT_TARGET = "robbieFootTarget"
 LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
 FORWARD_REWARD = 100
 CONTINUOUS_REWARD = 0.125
-SIDEWAYS_PENALTY = -2
 BACKWARDS_PENALTY = -200
-ROTATION_PENALTY = -1
+ROTATION_PENALTY = -2
+STUCK_PENALTY = -100
+FALL_PENALTY = -1000
 
 # state and action contants
-STATES_DIM = 24
+STATES_DIM = 36
 ACTIONS_DIM = 8
 
 # action values
-JOINT_POS_LIMIT = math.pi / 2
-ROTATION_SPEED = math.pi * 10
+MAX_SPEED = 0.5
+MIN_LIMITS = [0, -4e-2, -2e-2]
+MAX_LIMITS = [0, 2e-2, 3e-2]
 
 class Robbie(object):
     def __init__(self, sim, name):
@@ -42,41 +47,47 @@ class Robbie(object):
         self.last_tick = time()
 
         # id handles
-        self.active_joints = []
-        self.passive_joints = []
+        self.foot_tips = []
+        self.foot_targets = []
+        self.robot_joints = []
 
-        # get handles of leg joints
+        # get handles of leg joints and foot summies
         for suffix in LEG_JOINT_SUFFIX:
-            self.active_joints += [self.sim.get_handle(LEG_TOP_JOINT + suffix),
-                                   self.sim.get_handle(LEG_BOTTOM_JOINT + suffix)]
-            self.passive_joints += [self.sim.get_handle(LEG_MIDDLE_JOINT + suffix)]
+            self.foot_tips += [self.sim.get_handle(FOOT_TIP + suffix)]
+            self.foot_targets += [self.sim.get_handle(FOOT_TARGET + suffix)]
+            self.robot_joints += [self.sim.get_handle(LEG_TOP_JOINT + suffix),
+                                  self.sim.get_handle(LEG_MIDDLE_JOINT + suffix),
+                                  self.sim.get_handle(LEG_BOTTOM_JOINT + suffix)]
 
         # get handle for tail joint
-        self.passive_joints += [self.sim.get_handle(TAIL_JOINT)]
+        self.robot_joints += [self.sim.get_handle(TAIL_JOINT)]
 
         # declare pose, position and speed variables
         self.position = [0] * 3
         self.orientation = [0] * 3
-        self.active_pos = [0] * len(self.active_joints)
-        self.active_speed = [0] * len(self.active_joints)
-        self.passive_pos = [0] * len(self.passive_joints)
+        self.tips_position = [0] * len(self.foot_tips)
+        self.tips_speed = [0] * (2 * len(self.foot_tips))
+        self.joints_position = [0] * len(self.foot_targets)
+
+        # relative positions
+        self.tips_rel_position = [0] * len(self.foot_tips)
+        self.init_rel_position = [0] * len(self.tips_rel_position)
+        self.max_positions = [0] * len(self.tips_rel_position)
+        self.min_positions = [0] * len(self.tips_rel_position)
+
+        # last frame variables
         self.last_position = [0] * 3
         self.last_orientation = [0] * 3
-        self.last_speed = [0] * len(self.active_joints)
+        self.last_speed = [0] * len(self.tips_speed)
 
-        # stuck check variables
+        # stuck and fallen check variables
         self.is_stuck = False
         self.stuck_position = [0] * 3
         self.stuck_time = 0
+        self.has_fallen = False
 
         # initial update
-        self.update(True)
-
-        # save initial values to reset scene
-        self.init_position = self.position
-        self.init_orientation = self.orientation
-        self.init_active_pos = self.active_pos
-        self.init_passive_pos = self.passive_pos
+        self.pre_update()
 
     ## reset robot on the scene
     def reset_robot(self):
@@ -86,29 +97,40 @@ class Robbie(object):
         self.sim.connect()
 
         # reset variables
-        self.active_speed = [0] * len(self.active_joints)
+        self.last_speed = [0] * len(self.tips_speed)
         self.is_stuck = False
         self.stuck_position = [0] * 3
         self.stuck_time = 0
 
         # initial update
-        self.update(True)
+        self.pre_update()
+
+    # first update to be run
+    def pre_update(self):
+        self.sim.update()
+        self.update_pose(True)
+        self.update_sensors(True)
+        self.sim.update()
+        self.update_pose(False)
+        self.update_sensors(False)
+        self.calculate_limits()
 
     ## main update
-    def update(self, first_time=False):
+    def update(self):
         # get tick delta time
         now_tick = time()
-        tick_time = 0 if first_time else now_tick - self.last_tick
+        tick_time = now_tick - self.last_tick
         self.last_tick = now_tick
 
-        # update joint positions
-        self.rotate_joints(tick_time)
+        # update robot feet position
+        self.move_feet(tick_time)
 
         # update simulator after rotations
         self.sim.update()
-        self.update_pose(first_time)
-        self.update_sensors(first_time)
+        self.update_pose(False)
+        self.update_sensors(False)
         self.check_stuck(tick_time)
+        self.check_fallen()
 
     ## update pose
     def update_pose(self, first_time):
@@ -119,25 +141,40 @@ class Robbie(object):
 
     ## update sensors
     def update_sensors(self, first_time):
-        self.active_pos = [self.sim.get_joint_position(i, first_time) for i in self.active_joints]
-        self.passive_pos = [self.sim.get_joint_position(i, first_time) for i in self.passive_joints]
+        self.joints_position = [self.sim.get_joint_position(i, first_time) for i in self.robot_joints]
+        self.tips_position = [self.sim.get_position(i, first_time) for i in self.foot_tips]
+        self.tips_rel_position = [self.sim.get_position(i, first_time, True) for i in self.foot_targets]
 
-    ## rotate active joints based on speed
-    def rotate_joints(self, tick_time):
-        for index, active_joint in enumerate(self.active_joints):
-            new_pos = self.active_pos[index] + self.active_speed[index] * tick_time
-            new_pos = max(-JOINT_POS_LIMIT, min(new_pos, JOINT_POS_LIMIT))
-            self.sim.set_joint_position(active_joint, new_pos)
+    ## move robot feet targets
+    def move_feet(self, tick_time):
+        for i, foot_target in enumerate(self.foot_targets):
+            index = i * 2
+            tick_move = MAX_SPEED * tick_time
+
+            # calculate wanted values
+            target_delta = [0] * 3
+            target_delta[0] = 0
+            target_delta[1] = self.tips_speed[index] * tick_move
+            target_delta[2] = self.tips_speed[index + 1] * tick_move
+
+            # clamp values
+            new_rel_position = [a + b for a, b in zip(self.tips_rel_position[i], target_delta)]
+            for j, _ in enumerate(new_rel_position):
+                new_rel_position[j] = min(new_rel_position[j], self.max_positions[i][j])
+                new_rel_position[j] = max(new_rel_position[j], self.min_positions[i][j])
+
+            self.sim.set_position(foot_target, new_rel_position, True)
 
     ## return robot current state
     def get_state(self):
         state = []
-        state += self.active_pos    # 8 states (active joints position)
-        state += self.passive_pos   # 5 states (passive joints position)
-        #state += [self.position[0]] # 1 state  (robot y position)
-        state += self.orientation   # 3 states (robot orientation)
-        state += self.active_speed  # 8 states (active joints speed)
-        return state                # total: 24 states
+        for tip_position in self.tips_position:
+            relative_position = [a - b for a, b in zip(self.position, tip_position)]
+            state += relative_position  # 12 states (4 feet tips position 3 axis)
+        state += self.tips_speed        # 8 states (4 feet targets speed 2 axis)
+        state += self.joints_position   # 13 states (passive joints position)
+        state += self.orientation       # 3 states (robot orientation 3 axis)
+        return state                    # total: 36 states
 
     ## return current state reward
     def get_reward(self):
@@ -163,34 +200,32 @@ class Robbie(object):
         last_angle = self.last_orientation[2]
         angle_vector = [-math.sin(last_angle), math.cos(last_angle), 0]
         dot_product = angle_vector[0] * diff_position[0] + angle_vector[1] * diff_position[1]
-        # cos_angle = dot_product / distance
-        # sin_angle =math.sqrt(1 - math.pow(cos_angle, 2))
-        # relative_position = [diff_position[0] * cos_angle, diff_position[1] * sin_angle, diff_position[2]]
-        # direction = math.copysign(1, relative_position[1])
         direction = math.copysign(1, dot_product)
 
-        # calculate if joints have same speed than last frame
-        same_speeds = [math.copysign(1, a) == math.copysign(1, b) for a, b in zip(self.active_speed, self.last_speed)]
+        # calculate if targets have same speed than last frame
+        same_speeds = [math.copysign(1, a) == math.copysign(1, b) for a, b in zip(self.tips_speed, self.last_speed)]
 
         # reward for getting far or penalty for going backwards
         if direction == 1:
             reward += distance * FORWARD_REWARD
         else:
             reward += distance * BACKWARDS_PENALTY
-        # reward += diff_position[1] * FORWARD_REWARD
 
         # penalty for getting off track
         reward += diff_angle_deg * ROTATION_PENALTY
-        # reward += abs(diff_position[0]) * SIDEWAYS_PENALTY
-
-        # penalty for rotation backwards
-        # if self.is_backwards():
-        #     reward += BACKWARDS_PENALTY
 
         # reward for having same speed
         for same_speed in same_speeds:
             if same_speed:
                 reward += CONTINUOUS_REWARD
+
+        # penalty for getting stuck
+        if self.is_stuck:
+            reward += STUCK_PENALTY
+
+        # penalty for falling down
+        if self.has_fallen:
+            reward += FALL_PENALTY
 
         return reward
 
@@ -210,22 +245,29 @@ class Robbie(object):
             self.stuck_position = self.position
             self.is_stuck = False
 
-    ## check if robot is facing backwards
-    def is_backwards(self):
-        return abs(self.orientation[2]) < math.pi / 2
+    ## check if robot has fallen
+    def check_fallen(self):
+        self.has_fallen = self.position[2] < FALL_HEIGHT
+
+    ## calculate min and max position for each foot
+    def calculate_limits(self):
+        self.init_rel_position = copy.copy(self.tips_rel_position)
+        for i, rel_position in enumerate(self.init_rel_position):
+            self.max_positions[i] = [a + b for a, b in zip(rel_position, MAX_LIMITS)]
+            self.min_positions[i] = [a + b for a, b in zip(rel_position, MIN_LIMITS)]
 
     ## exectute actions on robot
     def act(self, actions):
         # perform actions
-        self.last_speed = copy.copy(self.active_speed)
-        for index, action in enumerate(actions):
-            self.active_speed[index] = action * ROTATION_SPEED
+        self.last_speed = copy.copy(self.tips_speed)
+        for i, action in enumerate(actions):
+            self.tips_speed[i] = action * MAX_SPEED
 
         # update robot on simulator
         self.update()
 
         # check if should finish
-        done = self.is_stuck
+        done = self.is_stuck or self.has_fallen
 
         # return new state
         return self.get_state(), self.get_reward(), done

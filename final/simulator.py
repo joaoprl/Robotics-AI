@@ -59,22 +59,22 @@ class Simulator(object):
 
         return state, coord
 
-    def get_position(self, handle, first_call=False, relative_to_parent=False):
+    def get_position(self, handle, first_call=False, relative=False):
         opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
-        relative = vrep.sim_handle_parent if relative_to_parent else -1
+        relative_mode = vrep.sim_handle_parent if relative else -1
         # return absolute position
-        status, pos = vrep.simxGetObjectPosition(self.id, handle, relative, opmode)
+        status, pos = vrep.simxGetObjectPosition(self.id, handle, relative_mode, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')
 
         return pos
 
-    def get_orientation(self, handle, first_call=False, relative_to_parent=False):
+    def get_orientation(self, handle, first_call=False, relative=False):
         opmode = vrep.simx_opmode_streaming if first_call else vrep.simx_opmode_buffer
-        relative = vrep.sim_handle_parent if relative_to_parent else -1
+        relative_mode = vrep.sim_handle_parent if relative else -1
         # return absolute position
-        status, pos = vrep.simxGetObjectOrientation(self.id, handle, relative, opmode)
+        status, pos = vrep.simxGetObjectOrientation(self.id, handle, relative_mode, opmode)
 
         if status is ERROR:
             raise Exception('Unable to receive handle!')
@@ -100,15 +100,17 @@ class Simulator(object):
 
         return pos
 
-    def set_position(self, handle, pos):
+    def set_position(self, handle, pos, relative=False):
+        relative_mode = vrep.sim_handle_parent if relative else -1
         if self.id is not ERROR:
             vrep.simxSetObjectPosition(
-                self.id, handle, -1, pos, vrep.simx_opmode_oneshot)
+                self.id, handle, relative_mode, pos, vrep.simx_opmode_oneshot)
 
-    def set_orientation(self, handle, ori):
+    def set_orientation(self, handle, ori, relative=False):
+        relative_mode = vrep.sim_handle_parent if relative else -1
         if self.id is not ERROR:
             vrep.simxSetObjectOrientation(
-                self.id, handle, -1, ori, vrep.simx_opmode_oneshot)
+                self.id, handle, relative_mode, ori, vrep.simx_opmode_oneshot)
 
     def set_joint_position(self, handle, pos):
         if self.id is not ERROR:

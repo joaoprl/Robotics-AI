@@ -9,7 +9,7 @@ REMOTE_API_FUNC = 'resetSimulation'
 # robot constants
 STUCK_MARGIN = 1e-2
 STUCK_TIMEOUT = 10
-FALL_HEIGHT = 6e-2
+FALL_HEIGHT = 7e-2
 
 # robot joints names
 TAIL_JOINT = "tailJoint"
@@ -21,21 +21,21 @@ FOOT_TARGET = "robbieFootTarget"
 LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
-FORWARD_REWARD = 100
-CONTINUOUS_REWARD = 0.125
-BACKWARDS_PENALTY = -200
-ROTATION_PENALTY = -2
-STUCK_PENALTY = -100
-FALL_PENALTY = -1000
+FORWARD_REWARD = 100 # reward for getting far
+CONTINUOUS_REWARD = 0.125 # reward for having same speed as last frame
+BACKWARDS_PENALTY = -200 # penalty for going backwards
+ROTATION_PENALTY = -2 # penalty for getting off track
+STUCK_PENALTY = -100 # penalty for getting stuck
+FALL_PENALTY = -1000 # penalty for falling down
 
 # state and action contants
 STATES_DIM = 36
 ACTIONS_DIM = 8
 
 # action values
-MAX_SPEED = 0.5
-MIN_LIMITS = [0, -4e-2, -2e-2]
-MAX_LIMITS = [0, 2e-2, 3e-2]
+MAX_SPEED = 0.5 # max speed of feet
+MIN_LIMITS = [0, -2e-2, -1e-2] # min relative position of each foot
+MAX_LIMITS = [0, 2e-2, 3e-2] # max relative position of each foot
 
 class Robbie(object):
     def __init__(self, sim, name):
@@ -214,7 +214,7 @@ class Robbie(object):
         # penalty for getting off track
         reward += diff_angle_deg * ROTATION_PENALTY
 
-        # reward for having same speed
+        # reward for having same speed as last frame
         for same_speed in same_speeds:
             if same_speed:
                 reward += CONTINUOUS_REWARD

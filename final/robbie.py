@@ -18,9 +18,10 @@ LEG_BOTTOM_JOINT = "robbieLegJoint3"
 LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
-FORWARD_REWARD = 50
+FORWARD_REWARD = 100
+CONTINUOUS_REWARD = 0.125
 SIDEWAYS_PENALTY = -2
-BACKWARDS_PENALTY = -100
+BACKWARDS_PENALTY = -200
 ROTATION_PENALTY = -1
 
 # state and action contants
@@ -55,12 +56,13 @@ class Robbie(object):
 
         # declare pose, position and speed variables
         self.position = [0] * 3
-        self.last_position = [0] * 3
         self.orientation = [0] * 3
-        self.last_orientation = [0] * 3
         self.active_pos = [0] * len(self.active_joints)
         self.active_speed = [0] * len(self.active_joints)
         self.passive_pos = [0] * len(self.passive_joints)
+        self.last_position = [0] * 3
+        self.last_orientation = [0] * 3
+        self.last_speed = [0] * len(self.active_joints)
 
         # stuck check variables
         self.is_stuck = False
@@ -167,6 +169,9 @@ class Robbie(object):
         # direction = math.copysign(1, relative_position[1])
         direction = math.copysign(1, dot_product)
 
+        # calculate if joints have same speed than last frame
+        same_speeds = [math.copysign(1, a) == math.copysign(1, b) for a, b in zip(self.active_speed, self.last_speed)]
+
         # reward for getting far or penalty for going backwards
         if direction == 1:
             reward += distance * FORWARD_REWARD
@@ -181,6 +186,11 @@ class Robbie(object):
         # penalty for rotation backwards
         # if self.is_backwards():
         #     reward += BACKWARDS_PENALTY
+
+        # reward for having same speed
+        for same_speed in same_speeds:
+            if same_speed:
+                reward += CONTINUOUS_REWARD
 
         return reward
 
@@ -207,6 +217,7 @@ class Robbie(object):
     ## exectute actions on robot
     def act(self, actions):
         # perform actions
+        self.last_speed = copy.copy(self.active_speed)
         for index, action in enumerate(actions):
             self.active_speed[index] = action * ROTATION_SPEED
 

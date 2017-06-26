@@ -11,6 +11,7 @@ from ai_utils.critic import critic_network
 from keras import backend as K
 import tensorflow as tf
 import numpy as np
+import sys
 
 ## TODO: -> integrate with robot environment
 
@@ -66,7 +67,7 @@ class ddpg:
     ##########
 
     ## train our ddpg model
-    def train(self, max_episodes, max_steps, buffer_size=10000):
+    def train(self, max_episodes, max_steps, buffer_size=5000):
         # initialize actor and critic networks
         actor = actor_network(self.sess, self.state_dim, self.action_dim,
             self.batch_size, self.tau, self.lra)
@@ -113,10 +114,10 @@ class ddpg:
                 new_s_t, r_t, done = self.robot.act(a_t[0])
 
                 ## store transition at our buffer
-                buff.store(np.reshape(s_t, (self.state_dim, )), 
-                           np.reshape(a_t, (self.action_dim, )), 
-                           r_t, 
-                           np.reshape(new_s_t, (self.state_dim, )), 
+                buff.store(np.reshape(s_t, (self.state_dim, )),
+                           np.reshape(a_t, (self.action_dim, )),
+                           r_t,
+                           np.reshape(new_s_t, (self.state_dim, )),
                            done)
 
                 if buff.count > self.batch_size:
@@ -131,7 +132,7 @@ class ddpg:
                             self.gamma*target_q_batch
 
                     ## update critics by minimizing loss
-                    loss = critic.helper.train_on_batch([s_batch, a_batch], 
+                    loss = critic.helper.train_on_batch([s_batch, a_batch],
                         y_batch)
 
                     ## update actor policy using the sampled policy gradient
@@ -165,6 +166,7 @@ class ddpg:
             print('\tTOTAL REWARD: ' + str(total_reward))
             print('\tAVERAGE LOSS: ' + str(avg_loss/max_steps))
             print('*********************************************')
+            print(str(episode) + ", " + str(total_reward) + ", " + str(avg_loss/max_steps), file=sys.stderr)
 
     ## run our ddpg model
     def run(self, max_episodes, max_steps):

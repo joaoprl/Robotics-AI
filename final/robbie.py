@@ -21,13 +21,13 @@ FOOT_TARGET = "robbieFootTarget"
 LEG_JOINT_SUFFIX = ["", "#0", "#1", "#2"]
 
 # reward values
-FORWARD_REWARD = 200 # reward for getting far
+FORWARD_REWARD = 100 # reward for getting far
 CONTINUOUS_REWARD = 0 # reward for having same speed as last frame
-BACKWARDS_PENALTY = -.5 # penalty for going backwards
+BACKWARDS_PENALTY = -100 # penalty for going backwards
 ROTATION_PENALTY = -.25 # penalty for getting off track
-STUCK_PENALTY = 0 # penalty for getting stuck
-FALL_PENALTY = -10 # penalty for falling down
-STOP_PENALTY = -5 # penalty for not moving
+STUCK_PENALTY = -10 # penalty for getting stuck
+FALL_PENALTY = -20 # penalty for falling down
+STOP_PENALTY = -10 # penalty for not moving
 
 # state and action contants
 STATES_DIM = 36

@@ -35,8 +35,10 @@ ACTIONS_DIM = 8
 
 # action values
 MAX_SPEED = 0.5 # max speed of feet
-MIN_LIMITS = [0, -2e-2, -1e-2] # min relative position of each foot
-MAX_LIMITS = [0, 2e-2, 2e-2] # max relative position of each foot
+FRONT_MIN_LIMITS = [0, -2e-2, -1e-2] # min relative position of front feet
+FRONT_MAX_LIMITS = [0, 2e-2, 2e-2] # max relative position of front feet
+BACK_MIN_LIMITS = [0, -2e-2, -1e-2] # min relative position of back feet
+BACK_MAX_LIMITS = [0, 2e-2, 2e-2] # max relative position of back feet
 
 class Robbie(object):
     def __init__(self, sim, name):
@@ -262,8 +264,11 @@ class Robbie(object):
     def calculate_limits(self):
         self.init_rel_position = copy.copy(self.tips_rel_position)
         for i, rel_position in enumerate(self.init_rel_position):
-            self.max_positions[i] = [a + b for a, b in zip(rel_position, MAX_LIMITS)]
-            self.min_positions[i] = [a + b for a, b in zip(rel_position, MIN_LIMITS)]
+            is_front_foot = (i % 2 == 0)
+            max_limit = FRONT_MAX_LIMITS if is_front_foot else BACK_MAX_LIMITS
+            min_limit = FRONT_MIN_LIMITS if is_front_foot else BACK_MIN_LIMITS
+            self.max_positions[i] = [a + b for a, b in zip(rel_position, max_limit)]
+            self.min_positions[i] = [a + b for a, b in zip(rel_position, min_limit)]
 
     ## exectute actions on robot
     def act(self, actions):

@@ -32,7 +32,16 @@ __pycache__
 # VS Code files
 .vscode/
 
-p2/
+# latex garbage
 *.aux
 *.log
 *.pdf
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.lb
+*.bbl
+*.blg
+*.brf
+
+p2/

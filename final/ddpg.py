@@ -166,7 +166,7 @@ class ddpg:
             print('\tTOTAL REWARD: ' + str(total_reward))
             print('\tAVERAGE LOSS: ' + str(avg_loss/max_steps))
             print('*********************************************')
-            print(str(episode) + ", " + str(total_reward) + ", " + str(avg_loss/max_steps), file=sys.stderr)
+            # print(str(episode) + ", " + str(total_reward) + ", " + str(avg_loss/max_steps), file=sys.stderr)
 
     ## run our ddpg model
     def run(self, max_episodes, max_steps):
